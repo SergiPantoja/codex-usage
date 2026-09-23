@@ -15,14 +15,25 @@ const THREAD_B = `${fixtures}rollout-2026-08-31T19-00-00-thread-b.jsonl`;
 // the file still reconciles and only the missing-field count can show the rename. x2 also
 // lacks cache_write_input_tokens everywhere, as logs from a Codex that never wrote it would.
 const RENAMED_FIELD = `${fixtures}rollout-2026-09-20T07-59-00-renamed-field.jsonl`;
+// c1 is a compaction before any turn_context, d1 has a turn_id and a root_turn_id naming
+// different models, d2 has only its root_turn_id resolvable, and d3 has its turn_context after
+// it and a root_turn_id that resolves nowhere. Input doubles each time.
+const ATTRIBUTION = `${fixtures}rollout-2026-09-20T09-00-00-attribution.jsonl`;
+// Fields missing from otherwise ordinary records: u1 has no timestamp, u2 an unreadable one, the
+// next two no response_id, u5 no usage object, u6 a string for input_tokens, one event_msg no
+// payload, and a token_count no rate_limits. u1 to u4 carry 1,000, 2,000, 4,000 and 8,000
+// input. Read per test, so that a record that throws fails the tests that read it rather than
+// the whole file.
+const SPARSE = `${fixtures}rollout-2026-09-20T10-00-00-sparse.jsonl`;
+// One usage record, whose thread_token_usage disagrees with it on cached input only.
+const SINGLE = `${fixtures}rollout-2026-09-20T11-00-00-single.jsonl`;
 
 // Noon on 2026-09-20 in New York, which is UTC-4 in September.
-const report = await aggregate([THREAD_A, THREAD_B], {
-  timeZone: 'America/New_York',
-  now: new Date('2026-09-20T16:00:00Z'),
-  days: 7,
-});
+const OPTIONS = { timeZone: 'America/New_York', now: new Date('2026-09-20T16:00:00Z'), days: 7 };
+const report = await aggregate([THREAD_A, THREAD_B], OPTIONS);
 const { rolling, mtd, allTime } = report.periods;
+const UTC_OPTIONS = { timeZone: 'UTC', now: new Date('2026-09-20T18:00:00Z') };
+const readSparse = () => aggregate([SPARSE], UTC_OPTIONS);
 
 const cell = (table, model, bucket = 'short') => table.get(model)?.get(bucket);
 
@@ -80,6 +91,47 @@ test('counts a compaction into the active model and tallies it separately', () =
   assert.deepEqual(cell(allTime.models, 'gpt-6-astra'), R2_AND_R4);
 });
 
+test('counts a compaction replayed in another file once', async () => {
+  const replayed = await aggregate([ATTRIBUTION, ATTRIBUTION], UTC_OPTIONS);
+  assert.equal(replayed.meta.duplicatesSkipped, 4);
+  assert.equal(cell(replayed.periods.allTime.compaction, 'model-first').requests, 1);
+  assert.equal(cell(replayed.periods.allTime.models, 'model-first').requests, 2);
+});
+
+test('resolves a model by turn_id, then root_turn_id, and a compaction with neither by the file first model', async () => {
+  const { periods } = await aggregate([ATTRIBUTION], UTC_OPTIONS);
+  assert.deepEqual([...periods.allTime.models.keys()].sort(), ['model-first', 'model-second', 'model-third']);
+  // d1 by its turn_id over its root_turn_id, d3 by a turn_context that comes after it.
+  assert.equal(cell(periods.allTime.models, 'model-second').inputTokens, 2000);
+  assert.equal(cell(periods.allTime.models, 'model-third').inputTokens, 8000);
+  // d2 by its root_turn_id, and c1, which comes before any turn_context.
+  assert.equal(cell(periods.allTime.models, 'model-first').inputTokens, 1000 + 4000);
+  assert.deepEqual([...periods.allTime.compaction.keys()], ['model-first']);
+  assert.equal(cell(periods.allTime.compaction, 'model-first').inputTokens, 1000);
+});
+
+test('keeps a record with a missing or unreadable timestamp in all time only, and counts it', async () => {
+  const { periods, meta } = await readSparse();
+  assert.equal(meta.undatedRecords, 2);
+  assert.equal(sumTable(periods.allTime.models).inputTokens, 15000);
+  assert.equal(sumTable(periods.mtd.models).inputTokens, 12000);
+  assert.equal(sumTable(periods.rolling.models).inputTokens, 12000);
+});
+
+test('counts every record that has no response_id, none of them as a duplicate', async () => {
+  const { meta } = await readSparse();
+  assert.deepEqual([meta.usageRecordsRead, meta.recordsCounted, meta.duplicatesSkipped], [6, 6, 0]);
+});
+
+test('reads a missing usage object or a count that is not a number as 0, and counts it as missing', async () => {
+  const { periods, meta } = await readSparse();
+  // u6 carries input_tokens as the string '64000'.
+  assert.equal(cell(periods.allTime.models, 'gpt-5.6-sol').inputTokens, 15000);
+  assert.deepEqual(meta.missingUsageFields, {
+    input_tokens: 2, cached_input_tokens: 1, cache_write_input_tokens: 1, output_tokens: 1,
+  });
+});
+
 test('splits long context per request, strictly above 272,000 input tokens', () => {
   assert.deepEqual(cell(allTime.models, 'gpt-9-imaginary', 'short'), R5);
   assert.deepEqual(cell(allTime.models, 'gpt-9-imaginary', 'long'), R6);
@@ -93,6 +145,7 @@ test('buckets by each record local day, not the UTC day or the file name', () =>
   assert.deepEqual(cell(rolling.days.get('2026-09-17'), 'gpt-5.6-sol'), R1);
   assert.deepEqual([...rolling.days.get('2026-09-18').keys()].sort(), ['<unknown>', 'gpt-6-astra']);
   assert.deepEqual([...rolling.days.get('2026-09-19').keys()], ['gpt-9-imaginary']);
+  assert.deepEqual(cell(rolling.days.get('2026-09-19'), 'gpt-9-imaginary', 'long'), R6);
   for (const day of ['2026-09-14', '2026-09-15', '2026-09-16', '2026-09-20']) {
     assert.equal(rolling.days.get(day).size, 0, day);
   }
@@ -114,6 +167,26 @@ test('rolling, month to date and all time each include only their own days', () 
   assert.equal(cell(allTime.models, 'gpt-5.6-sol').requests, 3);
 });
 
+test('takes today from the time zone, not from the UTC date', async () => {
+  // 02:00 UTC on the 20th is 22:00 on the 19th in New York.
+  const late = await aggregate([THREAD_A, THREAD_B], { ...OPTIONS, now: new Date('2026-09-20T02:00:00Z') });
+  assert.equal(late.meta.today, '2026-09-19');
+  assert.deepEqual([late.periods.rolling.startDay, late.periods.rolling.endDay], ['2026-09-13', '2026-09-19']);
+  assert.equal(late.periods.mtd.endDay, '2026-09-19');
+});
+
+test('counts a record on the first and on the last day of the window, and none after today', async () => {
+  // A two-day window of the 17th and 18th: r1 is on the 17th, r2 to r4 on the 18th, and r5 and
+  // r6 on the 19th, which is after today.
+  const short = await aggregate([THREAD_A, THREAD_B], { ...OPTIONS, now: new Date('2026-09-18T16:00:00Z'), days: 2 });
+  const { rolling: window, mtd: month } = short.periods;
+  assert.deepEqual([window.startDay, window.endDay], ['2026-09-17', '2026-09-18']);
+  assert.deepEqual([...window.models.keys()].sort(), ['<unknown>', 'gpt-5.6-sol', 'gpt-6-astra']);
+  assert.deepEqual(cell(window.models, 'gpt-5.6-sol'), R1);
+  assert.deepEqual(cell(window.models, 'gpt-6-astra'), R2_AND_R4);
+  assert.ok(!month.models.has('gpt-9-imaginary'));
+});
+
 test('reconciles each file before deduplication and flags a mismatch', () => {
   const [a, b] = report.meta.reconciliation;
   assert.equal(a.file, 'rollout-2026-09-16T10-00-00-thread-a.jsonl');
@@ -123,6 +196,15 @@ test('reconciles each file before deduplication and flags a mismatch', () => {
   assert.equal(b.ok, false);
   assert.equal(b.expected.inputTokens, 50000);
   assert.equal(b.actual.inputTokens, 49000);
+});
+
+test('reconciles a file with a single usage record, on every field', async () => {
+  const { meta } = await aggregate([SINGLE], UTC_OPTIONS);
+  assert.equal(meta.reconciliation.length, 1);
+  const [single] = meta.reconciliation;
+  assert.equal(single.ok, false);
+  assert.equal(single.expected.inputTokens, single.actual.inputTokens);
+  assert.deepEqual([single.expected.cachedInputTokens, single.actual.cachedInputTokens], [600, 500]);
 });
 
 test('counts usage records that lack a field the cost depends on', async () => {
@@ -141,6 +223,7 @@ test('does not count a field that is present with the value 0', () => {
 
 test('records the latest rate-limit snapshot per limit_id by timestamp', () => {
   // Thread B is read last but its codex snapshot is older than thread A's.
+  assert.deepEqual([...report.meta.rateLimits.keys()].sort(), ['codex', 'premium']);
   const codex = report.meta.rateLimits.get('codex');
   assert.equal(codex.observedAt, '2026-09-18T03:30:01.000Z');
   assert.equal(codex.primary.used_percent, 1);
