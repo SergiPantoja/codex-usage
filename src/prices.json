@@ -1,0 +1,852 @@
+{
+  "sourceUrl": "https://raw.githubusercontent.com/BerriAI/litellm/721d39f476428a0e8f5991fef94669e53bd20df1/model_prices_and_context_window.json",
+  "litellmCommit": "721d39f476428a0e8f5991fef94669e53bd20df1",
+  "capturedAt": "2026-09-23T07:08:12Z",
+  "sourceEntries": 4183,
+  "models": {
+    "chat-latest": {
+      "short": {
+        "input": 0.000005,
+        "cachedInput": 5e-7,
+        "cacheWrite": null,
+        "output": 0.00003
+      },
+      "long": null
+    },
+    "computer-use-preview": {
+      "short": {
+        "input": 0.000003,
+        "cachedInput": null,
+        "cacheWrite": null,
+        "output": 0.000012
+      },
+      "long": null
+    },
+    "daybreak-blue-latest": {
+      "short": {
+        "input": 0.000004,
+        "cachedInput": 4e-7,
+        "cacheWrite": 0.000005,
+        "output": 0.00002
+      },
+      "long": {
+        "input": 0.000008,
+        "cachedInput": 8e-7,
+        "cacheWrite": 0.00001,
+        "output": 0.00003
+      }
+    },
+    "daybreak-red-latest": {
+      "short": {
+        "input": 0.0000125,
+        "cachedInput": 0.00000125,
+        "cacheWrite": 0.000015625,
+        "output": 0.000075
+      },
+      "long": {
+        "input": 0.000025,
+        "cachedInput": 0.0000025,
+        "cacheWrite": 0.00003125,
+        "output": 0.0001125
+      }
+    },
+    "ft:gpt-3.5-turbo": {
+      "short": {
+        "input": 0.000003,
+        "cachedInput": null,
+        "cacheWrite": null,
+        "output": 0.000006
+      },
+      "long": null
+    },
+    "ft:gpt-3.5-turbo-0125": {
+      "short": {
+        "input": 0.000003,
+        "cachedInput": null,
+        "cacheWrite": null,
+        "output": 0.000006
+      },
+      "long": null
+    },
+    "ft:gpt-3.5-turbo-0613": {
+      "short": {
+        "input": 0.000003,
+        "cachedInput": null,
+        "cacheWrite": null,
+        "output": 0.000006
+      },
+      "long": null
+    },
+    "ft:gpt-3.5-turbo-1106": {
+      "short": {
+        "input": 0.000003,
+        "cachedInput": null,
+        "cacheWrite": null,
+        "output": 0.000006
+      },
+      "long": null
+    },
+    "ft:gpt-4-0613": {
+      "short": {
+        "input": 0.00003,
+        "cachedInput": null,
+        "cacheWrite": null,
+        "output": 0.00006
+      },
+      "long": null
+    },
+    "ft:gpt-4.1-2025-04-14": {
+      "short": {
+        "input": 0.000003,
+        "cachedInput": 7.5e-7,
+        "cacheWrite": null,
+        "output": 0.000012
+      },
+      "long": null
+    },
+    "ft:gpt-4.1-mini-2025-04-14": {
+      "short": {
+        "input": 8e-7,
+        "cachedInput": 2e-7,
+        "cacheWrite": null,
+        "output": 0.0000032
+      },
+      "long": null
+    },
+    "ft:gpt-4.1-nano-2025-04-14": {
+      "short": {
+        "input": 2e-7,
+        "cachedInput": 5e-8,
+        "cacheWrite": null,
+        "output": 8e-7
+      },
+      "long": null
+    },
+    "ft:gpt-4o-2024-08-06": {
+      "short": {
+        "input": 0.00000375,
+        "cachedInput": 0.000001875,
+        "cacheWrite": null,
+        "output": 0.000015
+      },
+      "long": null
+    },
+    "ft:gpt-4o-2024-11-20": {
+      "short": {
+        "input": 0.00000375,
+        "cachedInput": null,
+        "cacheWrite": 0.000001875,
+        "output": 0.000015
+      },
+      "long": null
+    },
+    "ft:gpt-4o-mini-2024-07-18": {
+      "short": {
+        "input": 3e-7,
+        "cachedInput": 1.5e-7,
+        "cacheWrite": null,
+        "output": 0.0000012
+      },
+      "long": null
+    },
+    "ft:o4-mini-2025-04-16": {
+      "short": {
+        "input": 0.000004,
+        "cachedInput": 0.000001,
+        "cacheWrite": null,
+        "output": 0.000016
+      },
+      "long": null
+    },
+    "gpt-3.5-turbo": {
+      "short": {
+        "input": 5e-7,
+        "cachedInput": null,
+        "cacheWrite": null,
+        "output": 0.0000015
+      },
+      "long": null
+    },
+    "gpt-3.5-turbo-0125": {
+      "short": {
+        "input": 5e-7,
+        "cachedInput": null,
+        "cacheWrite": null,
+        "output": 0.0000015
+      },
+      "long": null
+    },
+    "gpt-3.5-turbo-1106": {
+      "short": {
+        "input": 0.000001,
+        "cachedInput": null,
+        "cacheWrite": null,
+        "output": 0.000002
+      },
+      "long": null
+    },
+    "gpt-3.5-turbo-16k": {
+      "short": {
+        "input": 0.000003,
+        "cachedInput": null,
+        "cacheWrite": null,
+        "output": 0.000004
+      },
+      "long": null
+    },
+    "gpt-4": {
+      "short": {
+        "input": 0.00003,
+        "cachedInput": null,
+        "cacheWrite": null,
+        "output": 0.00006
+      },
+      "long": null
+    },
+    "gpt-4-0613": {
+      "short": {
+        "input": 0.00003,
+        "cachedInput": null,
+        "cacheWrite": null,
+        "output": 0.00006
+      },
+      "long": null
+    },
+    "gpt-4-1106-preview": {
+      "short": {
+        "input": 0.00001,
+        "cachedInput": null,
+        "cacheWrite": null,
+        "output": 0.00003
+      },
+      "long": null
+    },
+    "gpt-4-turbo": {
+      "short": {
+        "input": 0.00001,
+        "cachedInput": null,
+        "cacheWrite": null,
+        "output": 0.00003
+      },
+      "long": null
+    },
+    "gpt-4-turbo-2024-04-09": {
+      "short": {
+        "input": 0.00001,
+        "cachedInput": null,
+        "cacheWrite": null,
+        "output": 0.00003
+      },
+      "long": null
+    },
+    "gpt-4.1": {
+      "short": {
+        "input": 0.000002,
+        "cachedInput": 5e-7,
+        "cacheWrite": null,
+        "output": 0.000008
+      },
+      "long": null
+    },
+    "gpt-4.1-2025-04-14": {
+      "short": {
+        "input": 0.000002,
+        "cachedInput": 5e-7,
+        "cacheWrite": null,
+        "output": 0.000008
+      },
+      "long": null
+    },
+    "gpt-4.1-mini": {
+      "short": {
+        "input": 4e-7,
+        "cachedInput": 1e-7,
+        "cacheWrite": null,
+        "output": 0.0000016
+      },
+      "long": null
+    },
+    "gpt-4.1-mini-2025-04-14": {
+      "short": {
+        "input": 4e-7,
+        "cachedInput": 1e-7,
+        "cacheWrite": null,
+        "output": 0.0000016
+      },
+      "long": null
+    },
+    "gpt-4.1-nano": {
+      "short": {
+        "input": 1e-7,
+        "cachedInput": 2.5e-8,
+        "cacheWrite": null,
+        "output": 4e-7
+      },
+      "long": null
+    },
+    "gpt-4.1-nano-2025-04-14": {
+      "short": {
+        "input": 1e-7,
+        "cachedInput": 2.5e-8,
+        "cacheWrite": null,
+        "output": 4e-7
+      },
+      "long": null
+    },
+    "gpt-4o": {
+      "short": {
+        "input": 0.0000025,
+        "cachedInput": 0.00000125,
+        "cacheWrite": null,
+        "output": 0.00001
+      },
+      "long": null
+    },
+    "gpt-4o-2024-05-13": {
+      "short": {
+        "input": 0.000005,
+        "cachedInput": null,
+        "cacheWrite": null,
+        "output": 0.000015
+      },
+      "long": null
+    },
+    "gpt-4o-2024-08-06": {
+      "short": {
+        "input": 0.0000025,
+        "cachedInput": 0.00000125,
+        "cacheWrite": null,
+        "output": 0.00001
+      },
+      "long": null
+    },
+    "gpt-4o-2024-11-20": {
+      "short": {
+        "input": 0.0000025,
+        "cachedInput": 0.00000125,
+        "cacheWrite": null,
+        "output": 0.00001
+      },
+      "long": null
+    },
+    "gpt-4o-audio-preview-2024-12-17": {
+      "short": {
+        "input": 0.0000025,
+        "cachedInput": null,
+        "cacheWrite": null,
+        "output": 0.00001
+      },
+      "long": null
+    },
+    "gpt-4o-audio-preview-2025-06-03": {
+      "short": {
+        "input": 0.0000025,
+        "cachedInput": null,
+        "cacheWrite": null,
+        "output": 0.00001
+      },
+      "long": null
+    },
+    "gpt-4o-mini": {
+      "short": {
+        "input": 1.5e-7,
+        "cachedInput": 7.5e-8,
+        "cacheWrite": null,
+        "output": 6e-7
+      },
+      "long": null
+    },
+    "gpt-4o-mini-2024-07-18": {
+      "short": {
+        "input": 1.5e-7,
+        "cachedInput": 7.5e-8,
+        "cacheWrite": null,
+        "output": 6e-7
+      },
+      "long": null
+    },
+    "gpt-4o-mini-audio-preview-2024-12-17": {
+      "short": {
+        "input": 1.5e-7,
+        "cachedInput": null,
+        "cacheWrite": null,
+        "output": 6e-7
+      },
+      "long": null
+    },
+    "gpt-4o-mini-search-preview": {
+      "short": {
+        "input": 1.5e-7,
+        "cachedInput": 7.5e-8,
+        "cacheWrite": null,
+        "output": 6e-7
+      },
+      "long": null
+    },
+    "gpt-4o-search-preview": {
+      "short": {
+        "input": 0.0000025,
+        "cachedInput": 0.00000125,
+        "cacheWrite": null,
+        "output": 0.00001
+      },
+      "long": null
+    },
+    "gpt-5": {
+      "short": {
+        "input": 0.00000125,
+        "cachedInput": 1.25e-7,
+        "cacheWrite": null,
+        "output": 0.00001
+      },
+      "long": null
+    },
+    "gpt-5-2025-08-07": {
+      "short": {
+        "input": 0.00000125,
+        "cachedInput": 1.25e-7,
+        "cacheWrite": null,
+        "output": 0.00001
+      },
+      "long": null
+    },
+    "gpt-5-chat": {
+      "short": {
+        "input": 0.00000125,
+        "cachedInput": 1.25e-7,
+        "cacheWrite": null,
+        "output": 0.00001
+      },
+      "long": null
+    },
+    "gpt-5-mini": {
+      "short": {
+        "input": 2.5e-7,
+        "cachedInput": 2.5e-8,
+        "cacheWrite": null,
+        "output": 0.000002
+      },
+      "long": null
+    },
+    "gpt-5-mini-2025-08-07": {
+      "short": {
+        "input": 2.5e-7,
+        "cachedInput": 2.5e-8,
+        "cacheWrite": null,
+        "output": 0.000002
+      },
+      "long": null
+    },
+    "gpt-5-nano": {
+      "short": {
+        "input": 5e-8,
+        "cachedInput": 5e-9,
+        "cacheWrite": null,
+        "output": 4e-7
+      },
+      "long": null
+    },
+    "gpt-5-nano-2025-08-07": {
+      "short": {
+        "input": 5e-8,
+        "cachedInput": 5e-9,
+        "cacheWrite": null,
+        "output": 4e-7
+      },
+      "long": null
+    },
+    "gpt-5-search-api": {
+      "short": {
+        "input": 0.00000125,
+        "cachedInput": 1.25e-7,
+        "cacheWrite": null,
+        "output": 0.00001
+      },
+      "long": null
+    },
+    "gpt-5-search-api-2025-10-14": {
+      "short": {
+        "input": 0.00000125,
+        "cachedInput": 1.25e-7,
+        "cacheWrite": null,
+        "output": 0.00001
+      },
+      "long": null
+    },
+    "gpt-5.1": {
+      "short": {
+        "input": 0.00000125,
+        "cachedInput": 1.25e-7,
+        "cacheWrite": null,
+        "output": 0.00001
+      },
+      "long": null
+    },
+    "gpt-5.1-2025-11-13": {
+      "short": {
+        "input": 0.00000125,
+        "cachedInput": 1.25e-7,
+        "cacheWrite": null,
+        "output": 0.00001
+      },
+      "long": null
+    },
+    "gpt-5.2": {
+      "short": {
+        "input": 0.00000175,
+        "cachedInput": 1.75e-7,
+        "cacheWrite": null,
+        "output": 0.000014
+      },
+      "long": null
+    },
+    "gpt-5.2-2025-12-11": {
+      "short": {
+        "input": 0.00000175,
+        "cachedInput": 1.75e-7,
+        "cacheWrite": null,
+        "output": 0.000014
+      },
+      "long": null
+    },
+    "gpt-5.4": {
+      "short": {
+        "input": 0.0000025,
+        "cachedInput": 2.5e-7,
+        "cacheWrite": null,
+        "output": 0.000015
+      },
+      "long": {
+        "input": 0.000005,
+        "cachedInput": 5e-7,
+        "cacheWrite": null,
+        "output": 0.0000225
+      }
+    },
+    "gpt-5.4-2026-03-05": {
+      "short": {
+        "input": 0.0000025,
+        "cachedInput": 2.5e-7,
+        "cacheWrite": null,
+        "output": 0.000015
+      },
+      "long": {
+        "input": 0.000005,
+        "cachedInput": 5e-7,
+        "cacheWrite": null,
+        "output": 0.0000225
+      }
+    },
+    "gpt-5.4-mini": {
+      "short": {
+        "input": 7.5e-7,
+        "cachedInput": 7.5e-8,
+        "cacheWrite": null,
+        "output": 0.0000045
+      },
+      "long": null
+    },
+    "gpt-5.4-mini-2026-03-17": {
+      "short": {
+        "input": 7.5e-7,
+        "cachedInput": 7.5e-8,
+        "cacheWrite": null,
+        "output": 0.0000045
+      },
+      "long": null
+    },
+    "gpt-5.4-nano": {
+      "short": {
+        "input": 2e-7,
+        "cachedInput": 2e-8,
+        "cacheWrite": null,
+        "output": 0.00000125
+      },
+      "long": null
+    },
+    "gpt-5.4-nano-2026-03-17": {
+      "short": {
+        "input": 2e-7,
+        "cachedInput": 2e-8,
+        "cacheWrite": null,
+        "output": 0.00000125
+      },
+      "long": null
+    },
+    "gpt-5.5": {
+      "short": {
+        "input": 0.000005,
+        "cachedInput": 5e-7,
+        "cacheWrite": null,
+        "output": 0.00003
+      },
+      "long": {
+        "input": 0.00001,
+        "cachedInput": 0.000001,
+        "cacheWrite": null,
+        "output": 0.000045
+      }
+    },
+    "gpt-5.5-2026-04-23": {
+      "short": {
+        "input": 0.000005,
+        "cachedInput": 5e-7,
+        "cacheWrite": null,
+        "output": 0.00003
+      },
+      "long": {
+        "input": 0.00001,
+        "cachedInput": 0.000001,
+        "cacheWrite": null,
+        "output": 0.000045
+      }
+    },
+    "gpt-5.5-cyber": {
+      "short": {
+        "input": 0.0000125,
+        "cachedInput": 0.00000125,
+        "cacheWrite": null,
+        "output": 0.000075
+      },
+      "long": null
+    },
+    "gpt-5.6": {
+      "short": {
+        "input": 0.000004,
+        "cachedInput": 4e-7,
+        "cacheWrite": 0.000005,
+        "output": 0.00002
+      },
+      "long": {
+        "input": 0.000008,
+        "cachedInput": 8e-7,
+        "cacheWrite": 0.00001,
+        "output": 0.00003
+      }
+    },
+    "gpt-5.6-cyber": {
+      "short": {
+        "input": 0.0000125,
+        "cachedInput": 0.00000125,
+        "cacheWrite": 0.000015625,
+        "output": 0.000075
+      },
+      "long": {
+        "input": 0.000025,
+        "cachedInput": 0.0000025,
+        "cacheWrite": 0.00003125,
+        "output": 0.0001125
+      }
+    },
+    "gpt-5.6-luna": {
+      "short": {
+        "input": 2e-7,
+        "cachedInput": 2e-8,
+        "cacheWrite": 2.5e-7,
+        "output": 0.0000012
+      },
+      "long": {
+        "input": 4e-7,
+        "cachedInput": 4e-8,
+        "cacheWrite": 5e-7,
+        "output": 0.0000018
+      }
+    },
+    "gpt-5.6-sol": {
+      "short": {
+        "input": 0.000004,
+        "cachedInput": 4e-7,
+        "cacheWrite": 0.000005,
+        "output": 0.00002
+      },
+      "long": {
+        "input": 0.000008,
+        "cachedInput": 8e-7,
+        "cacheWrite": 0.00001,
+        "output": 0.00003
+      }
+    },
+    "gpt-5.6-terra": {
+      "short": {
+        "input": 0.000002,
+        "cachedInput": 2e-7,
+        "cacheWrite": 0.0000025,
+        "output": 0.000012
+      },
+      "long": {
+        "input": 0.000004,
+        "cachedInput": 4e-7,
+        "cacheWrite": 0.000005,
+        "output": 0.000018
+      }
+    },
+    "gpt-6-astra": {
+      "short": {
+        "input": 0.00001,
+        "cachedInput": 0.000001,
+        "cacheWrite": 0.0000125,
+        "output": 0.00005
+      },
+      "long": {
+        "input": 0.00002,
+        "cachedInput": 0.000002,
+        "cacheWrite": 0.000025,
+        "output": 0.000075
+      }
+    },
+    "gpt-6-luna": {
+      "short": {
+        "input": 1e-7,
+        "cachedInput": 1e-8,
+        "cacheWrite": 1.25e-7,
+        "output": 5e-7
+      },
+      "long": {
+        "input": 2e-7,
+        "cachedInput": 2e-8,
+        "cacheWrite": 2.5e-7,
+        "output": 7.5e-7
+      }
+    },
+    "gpt-6-sol": {
+      "short": {
+        "input": 0.000002,
+        "cachedInput": 2e-7,
+        "cacheWrite": 0.0000025,
+        "output": 0.00001
+      },
+      "long": {
+        "input": 0.000004,
+        "cachedInput": 4e-7,
+        "cacheWrite": 0.000005,
+        "output": 0.000015
+      }
+    },
+    "gpt-audio": {
+      "short": {
+        "input": 0.0000025,
+        "cachedInput": null,
+        "cacheWrite": null,
+        "output": 0.00001
+      },
+      "long": null
+    },
+    "gpt-audio-1.5": {
+      "short": {
+        "input": 0.0000025,
+        "cachedInput": null,
+        "cacheWrite": null,
+        "output": 0.00001
+      },
+      "long": null
+    },
+    "gpt-audio-2025-08-28": {
+      "short": {
+        "input": 0.0000025,
+        "cachedInput": null,
+        "cacheWrite": null,
+        "output": 0.00001
+      },
+      "long": null
+    },
+    "gpt-audio-mini": {
+      "short": {
+        "input": 6e-7,
+        "cachedInput": null,
+        "cacheWrite": null,
+        "output": 0.0000024
+      },
+      "long": null
+    },
+    "gpt-audio-mini-2025-12-15": {
+      "short": {
+        "input": 6e-7,
+        "cachedInput": null,
+        "cacheWrite": null,
+        "output": 0.0000024
+      },
+      "long": null
+    },
+    "gpt-rosalind-research": {
+      "short": {
+        "input": 0.000005,
+        "cachedInput": 5e-7,
+        "cacheWrite": null,
+        "output": 0.000025
+      },
+      "long": null
+    },
+    "o1": {
+      "short": {
+        "input": 0.000015,
+        "cachedInput": 0.0000075,
+        "cacheWrite": null,
+        "output": 0.00006
+      },
+      "long": null
+    },
+    "o1-2024-12-17": {
+      "short": {
+        "input": 0.000015,
+        "cachedInput": 0.0000075,
+        "cacheWrite": null,
+        "output": 0.00006
+      },
+      "long": null
+    },
+    "o3": {
+      "short": {
+        "input": 0.000002,
+        "cachedInput": 5e-7,
+        "cacheWrite": null,
+        "output": 0.000008
+      },
+      "long": null
+    },
+    "o3-2025-04-16": {
+      "short": {
+        "input": 0.000002,
+        "cachedInput": 5e-7,
+        "cacheWrite": null,
+        "output": 0.000008
+      },
+      "long": null
+    },
+    "o3-mini": {
+      "short": {
+        "input": 0.0000011,
+        "cachedInput": 5.5e-7,
+        "cacheWrite": null,
+        "output": 0.0000044
+      },
+      "long": null
+    },
+    "o3-mini-2025-01-31": {
+      "short": {
+        "input": 0.0000011,
+        "cachedInput": 5.5e-7,
+        "cacheWrite": null,
+        "output": 0.0000044
+      },
+      "long": null
+    },
+    "o4-mini": {
+      "short": {
+        "input": 0.0000011,
+        "cachedInput": 2.75e-7,
+        "cacheWrite": null,
+        "output": 0.0000044
+      },
+      "long": null
+    },
+    "o4-mini-2025-04-16": {
+      "short": {
+        "input": 0.0000011,
+        "cachedInput": 2.75e-7,
+        "cacheWrite": null,
+        "output": 0.0000044
+      },
+      "long": null
+    }
+  }
+}
