@@ -13,6 +13,13 @@ const USAGE_FIELDS = {
   totalTokens: 'total_tokens',
 };
 
+// Reconciliation cannot see a field renamed in usage and thread_token_usage alike, because
+// both sides then read 0. Counting the usage records that lack a field the cost depends on
+// makes such a rename visible. Only an absent field counts, not a 0, so
+// cache_write_input_tokens, which has been 0 in every record observed so far, stays silent on
+// current logs and speaks up only on older logs or after a format change.
+const COST_FIELDS = ['input_tokens', 'cached_input_tokens', 'cache_write_input_tokens', 'output_tokens'];
+
 export async function aggregate(files, options = {}) {
   const {
     timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -36,6 +43,7 @@ export async function aggregate(files, options = {}) {
     timeZone, today, generatedAt: now.toISOString(), filesInspected: files.length,
     usageRecordsRead: 0, recordsCounted: 0, duplicatesSkipped: 0,
     unattributedRecords: 0, undatedRecords: 0, cacheWriteRecords: 0,
+    missingUsageFields: Object.fromEntries(COST_FIELDS.map((field) => [field, 0])),
     reconciliation: [], rateLimits: new Map(), recordTypes: new Map(),
   };
   const found = {
@@ -63,6 +71,7 @@ export async function aggregate(files, options = {}) {
       const day = dayOf(entry.timestamp);
 
       meta.recordsCounted++;
+      for (const field of entry.missingFields) meta.missingUsageFields[field]++;
       found.models.add(model);
       if (model === UNKNOWN_MODEL) meta.unattributedRecords++;
       if (entry.usage.cacheWriteTokens > 0) meta.cacheWriteRecords++;
@@ -108,6 +117,7 @@ async function readThread(file, counts, meta, found) {
         rootTurnId: payload.root_turn_id,
         timestamp: record.timestamp,
         usage: readUsage(payload.usage),
+        missingFields: COST_FIELDS.filter((field) => !Number.isFinite(payload.usage?.[field])),
         threadUsage: readUsage(payload.thread_token_usage),
         latestModel,
       });

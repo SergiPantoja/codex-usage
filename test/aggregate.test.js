@@ -11,6 +11,10 @@ import { aggregate } from '../src/aggregate.js';
 const fixtures = fileURLToPath(new URL('fixtures/', import.meta.url));
 const THREAD_A = `${fixtures}rollout-2026-09-16T10-00-00-thread-a.jsonl`;
 const THREAD_B = `${fixtures}rollout-2026-08-31T19-00-00-thread-b.jsonl`;
+// cached_input_tokens is renamed in usage, turn_token_usage and thread_token_usage alike, so
+// the file still reconciles and only the missing-field count can show the rename. x2 also
+// lacks cache_write_input_tokens everywhere, as logs from a Codex that never wrote it would.
+const RENAMED_FIELD = `${fixtures}rollout-2026-09-20T07-59-00-renamed-field.jsonl`;
 
 // Noon on 2026-09-20 in New York, which is UTC-4 in September.
 const report = await aggregate([THREAD_A, THREAD_B], {
@@ -119,6 +123,20 @@ test('reconciles each file before deduplication and flags a mismatch', () => {
   assert.equal(b.ok, false);
   assert.equal(b.expected.inputTokens, 50000);
   assert.equal(b.actual.inputTokens, 49000);
+});
+
+test('counts usage records that lack a field the cost depends on', async () => {
+  const renamed = await aggregate([RENAMED_FIELD], { timeZone: 'UTC', now: new Date('2026-09-20T18:00:00Z') });
+  assert.deepEqual(renamed.meta.missingUsageFields, {
+    input_tokens: 0, cached_input_tokens: 2, cache_write_input_tokens: 1, output_tokens: 0,
+  });
+});
+
+test('does not count a field that is present with the value 0', () => {
+  // r3 and q1 carry cached_input_tokens: 0, and every record but r6 has cache_write_input_tokens: 0.
+  assert.deepEqual(report.meta.missingUsageFields, {
+    input_tokens: 0, cached_input_tokens: 0, cache_write_input_tokens: 0, output_tokens: 0,
+  });
 });
 
 test('records the latest rate-limit snapshot per limit_id by timestamp', () => {
