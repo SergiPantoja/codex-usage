@@ -1,7 +1,7 @@
 {
   "sourceUrl": "https://raw.githubusercontent.com/BerriAI/litellm/721d39f476428a0e8f5991fef94669e53bd20df1/model_prices_and_context_window.json",
   "litellmCommit": "721d39f476428a0e8f5991fef94669e53bd20df1",
-  "capturedAt": "2026-09-23T07:08:12Z",
+  "capturedAt": "2026-09-23T08:03:39.925Z",
   "sourceEntries": 4183,
   "models": {
     "chat-latest": {
