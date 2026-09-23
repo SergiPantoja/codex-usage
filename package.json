@@ -1,0 +1,18 @@
+{
+  "name": "codex-usage-report",
+  "version": "0.0.0",
+  "description": "Token usage and API-equivalent cost from your local Codex session logs",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "codex-usage-report": "bin/codex-usage-report.js"
+  },
+  "files": [
+    "bin",
+    "src"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {}
+}
