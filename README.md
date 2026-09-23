@@ -39,7 +39,8 @@ served from cache.
 
 ## What it does
 
-It reads `~/.codex/sessions/` and `~/.codex/archived_sessions/`. It counts per-request token
+It reads `~/.codex/sessions/` and `~/.codex/archived_sessions/`, or the same two directories
+under `CODEX_HOME` if you set it, which is where Codex writes them. It counts per-request token
 usage. The logs also contain running totals, and adding those up inflates the numbers, so it
 ignores them. It groups by exact model, so `gpt-5.6-sol` and `gpt-6-astra` never get merged.
 It reports a rolling window, month to date, and all time, and it shows your Codex rate-limit
