@@ -28,10 +28,10 @@ const usage = (inputTokens, cachedInputTokens, cacheWriteTokens, outputTokens) =
   reasoningOutputTokens: 0, totalTokens: inputTokens + outputTokens,
 });
 const modelTable = (rows) => new Map(Object.entries(rows).map(([slug, buckets]) => [slug, new Map(Object.entries(buckets))]));
-function reportOf(rows) {
-  const period = () => ({ startDay: '2026-09-20', endDay: '2026-09-20', models: modelTable(rows), compaction: new Map() });
+function reportOf(rows, allTimeRows = rows) {
+  const period = (periodRows = rows) => ({ startDay: '2026-09-20', endDay: '2026-09-20', models: modelTable(periodRows), compaction: new Map() });
   return {
-    periods: { rolling: { ...period(), days: new Map([['2026-09-20', modelTable(rows)]]) }, mtd: period(), allTime: period() },
+    periods: { rolling: { ...period(), days: new Map([['2026-09-20', modelTable(rows)]]) }, mtd: period(), allTime: period(allTimeRows) },
     meta: {},
   };
 }
@@ -116,6 +116,13 @@ test('doubling a model rates doubles its cost and leaves other models alone', ()
   assert.equal(costOf(doubled, 'gpt-y'), costOf(base, 'gpt-y'));
 });
 
+test('a model row adds up the tokens of its short and long context requests', () => {
+  const priced = applyPricing(reportOf({ 'gpt-x': { short: usage(100, 40, 0, 1), long: usage(300000, 0, 0, 2) } }),
+    priceTable({ 'gpt-x': { short: RATES, long: null } }));
+  const row = priced.periods.allTime.models.get('gpt-x');
+  assert.deepEqual([row.requests, row.inputTokens, row.cachedInputTokens, row.outputTokens], [2, 300100, 40, 3]);
+});
+
 test('prices the long bucket at long rates, or at short rates when the model has none', () => {
   const long = { input: 20, cachedInput: 2, cacheWrite: 25, output: 75 };
   const report = reportOf({
@@ -136,14 +143,57 @@ test('keeps the tokens of an unpriced model, costs it null and names it', () => 
   assert.equal(priced.periods.allTime.cost, 10 * 10 + 50);
 });
 
+test('costs a period with nothing in it at 0, not null', () => {
+  const priced = applyPricing(reportOf({}), priceTable({ 'gpt-x': { short: RATES, long: null } }));
+  assert.deepEqual([priced.periods.allTime.cost, priced.periods.allTime.compactionCost], [0, 0]);
+});
+
+test('names an unpriced model, and notes a priced one, used only outside the rolling window', () => {
+  const recent = { 'gpt-x': { short: usage(10, 0, 0, 1) } };
+  const report = reportOf(recent, { ...recent, 'gpt-old': { short: usage(10, 0, 0, 1) }, 'gpt-y': { short: usage(10, 4, 0, 1) } });
+  const priced = applyPricing(report, priceTable({
+    'gpt-x': { short: RATES, long: null },
+    'gpt-y': { short: { ...RATES, cachedInput: null }, long: null },
+  }));
+  assert.deepEqual(priced.pricing.unpricedModels, ['gpt-old']);
+  assert.deepEqual(priced.pricing.notes, [{ model: 'gpt-y', issue: 'no-cached-rate', tokens: 4 }]);
+});
+
+test('prices cached tokens at a cached rate of 0 as free, not at the input rate', () => {
+  const priced = applyPricing(reportOf({ 'gpt-x': { short: usage(1000, 600, 0, 10) } }),
+    priceTable({ 'gpt-x': { short: { ...RATES, cachedInput: 0 }, long: null } }));
+  assert.equal(costOf(priced, 'gpt-x'), 400 * 10 + 10 * 50);
+  assert.deepEqual(priced.pricing.notes, []);
+});
+
+test('notes each priced model once per issue, adding up its buckets, even after an unpriced model', () => {
+  const report = reportOf({
+    'gpt-new': { short: usage(10, 5, 0, 1) },
+    'gpt-x': { short: usage(1000, 600, 0, 10), long: usage(300000, 100, 0, 1) },
+  });
+  const priced = applyPricing(report, priceTable({ 'gpt-x': { short: { ...RATES, cachedInput: null }, long: null } }));
+  assert.deepEqual(priced.pricing.notes, [{ model: 'gpt-x', issue: 'no-cached-rate', tokens: 700 }]);
+});
+
+test('notes nothing when a missing rate has no tokens to price and input is exactly all cached', () => {
+  const priced = applyPricing(reportOf({ 'gpt-x': { short: usage(1000, 1000, 0, 10) } }),
+    priceTable({ 'gpt-x': { short: { ...RATES, cacheWrite: null }, long: null } }));
+  assert.deepEqual(priced.pricing.notes, []);
+});
+
 test('prices cached and cache-write tokens at the input rate when those rates are missing, and notes it', () => {
-  const priced = applyPricing(reportOf({ 'gpt-x': { short: usage(1000, 600, 100, 10) } }),
-    priceTable({ 'gpt-x': { short: { ...RATES, cachedInput: null, cacheWrite: null }, long: null } }));
+  const report = reportOf({ 'gpt-x': { short: usage(1000, 600, 100, 10) } });
+  const priced = applyPricing(report, priceTable({ 'gpt-x': { short: { ...RATES, cachedInput: null, cacheWrite: null }, long: null } }));
   assert.equal(costOf(priced, 'gpt-x'), 1000 * 10 + 10 * 50);
   assert.deepEqual(priced.pricing.notes, [
     { model: 'gpt-x', issue: 'no-cached-rate', tokens: 600 },
     { model: 'gpt-x', issue: 'no-cache-write-rate', tokens: 100 },
   ]);
+  // gpt-5.5 has a cached-input rate and no cache-write rate. Its cache writes still take the
+  // input rate, not the cached one.
+  const cacheWriteOnly = applyPricing(report, priceTable({ 'gpt-x': { short: { ...RATES, cacheWrite: null }, long: null } }));
+  assert.equal(costOf(cacheWriteOnly, 'gpt-x'), 300 * 10 + 600 * 1 + 100 * 10 + 10 * 50);
+  assert.deepEqual(cacheWriteOnly.pricing.notes, [{ model: 'gpt-x', issue: 'no-cache-write-rate', tokens: 100 }]);
 });
 
 test('prices a dated slug by its undated name, preferring an exact match', () => {
@@ -155,6 +205,13 @@ test('prices a dated slug by its undated name, preferring an exact match', () =>
   }));
   assert.equal(costOf(priced, 'gpt-x-2026-09-01'), 100);
   assert.equal(costOf(priced, 'gpt-y-2026-01-01'), 30);
+  assert.deepEqual(priced.pricing.unpricedModels, []);
+});
+
+test('never prices a model variant at its base model rates', () => {
+  const priced = applyPricing(reportOf({ 'gpt-x-mini': { short: usage(10, 0, 0, 0) } }), priceTable({ 'gpt-x': { short: RATES, long: null } }));
+  assert.equal(costOf(priced, 'gpt-x-mini'), null);
+  assert.deepEqual(priced.pricing.unpricedModels, ['gpt-x-mini']);
 });
 
 test('never treats an inherited property as a model price', () => {
