@@ -10,39 +10,33 @@ It reads your local Codex session logs, adds up the tokens, and prices them agai
 OpenAI API rates. It writes a Markdown report and an SVG you can share. Nothing leaves your
 machine except one request for the price table.
 
-## Example
+![Example image output](examples/codex-usage.svg)
 
 ```
-codex-usage-report · last 7 days · America/Havana
+codex-usage-report · last 7 days · America/New_York
 
 model           reqs        input       cached    output   cached     cost
 ──────────────────────────────────────────────────────────────────────────
-gpt-6-astra      303   44,371,533   42,344,704   164,244    95.4%   $70.83
-gpt-5.6-sol      145   24,386,440   22,684,544    99,354    93.0%   $17.87
-gpt-5.6-terra     26    2,307,720    1,793,280    14,197    77.7%    $1.56
-gpt-6-sol         31    2,803,517    2,634,496     6,884    94.0%    $0.93
-gpt-5.6-luna      43    2,433,088    2,252,288    37,856    92.6%    $0.13
+gpt-6-astra      406   35,373,023   33,741,440   144,059    95.4%   $57.26
+gpt-5.6-sol      415   48,893,524   46,749,056   170,062    95.6%   $30.68
+gpt-5.6-terra     36    2,242,358    1,746,816    10,147    77.9%    $1.46
+gpt-6-sol         50    2,727,017    2,552,832     8,511    93.6%    $0.94
+gpt-5.6-luna      24    2,130,366    1,988,864    19,979    93.4%    $0.09
 ──────────────────────────────────────────────────────────────────────────
-total            548   76,302,298   71,709,312   322,535    94.0%   $91.31
-  compaction       4      895,413      893,824     9,766    99.8%    $1.03
+total            931   91,366,288   86,779,008   352,758    95.0%   $90.44
+  compaction       3      657,990      638,208     7,600    97.0%    $0.49
 
-month to date  $135.19      all time  $135.19
+month to date  $291.25      all time  $350.10
 
-codex plan: plus · 5h window reset since · weekly window 33% used
-  as of 2026-09-22 18:24
+codex plan: plus · 5h window 65% used · weekly window 59% used
+  as of 2026-09-24 02:40
 
-prices from LiteLLM, fetched 2026-09-23 23:26
-checked 10 files · 1,154 requests · 0 duplicates · all 10 files reconcile
+prices from LiteLLM, fetched 2026-09-24 02:45
+checked 111 files · 3,713 requests · 0 duplicates · all 111 files reconcile
 Fast mode is not logged (openai/codex#30413). It costs 2x the rates used here.
 
 wrote codex-usage.md and codex-usage.svg
 ```
-
-<!-- TODO after the first real run: generate examples/codex-usage.svg and embed it here.
-     The sample above is real output from the author's own logs. -->
-
-That is $91 of API-equivalent usage in one week on a $20 per month plan, with 94% of input
-tokens served from cache.
 
 ## What it does
 
