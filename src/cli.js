@@ -1,8 +1,12 @@
+import { writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
+import { isAbsolute, relative, resolve, sep } from 'node:path';
 import { parseArgs } from 'node:util';
 import { aggregate } from './aggregate.js';
 import { applyPricing, loadPrices } from './pricing.js';
-import { clean, renderNoRecords, renderNoSessions, renderTerminal } from './render.js';
+import {
+  clean, renderJson, renderMarkdown, renderNoRecords, renderNoSessions, renderTerminal, renderWarnings,
+} from './render.js';
 import { findRolloutFiles, resolveCodexHome, scanCounts } from './scan.js';
 
 // The network statement below has exactly one other copy, the README section "What this sends
@@ -14,7 +18,7 @@ Reads your Codex session logs in ~/.codex/sessions and
 prices the token usage at OpenAI API rates.
 
   --out PREFIX    output prefix          (default: codex-usage)
-  --days N        rolling window length  (default: 7)
+  --days N        window, 1 to 365 days  (default: 7)
   --json          full aggregate to stdout, suppresses the table
   --offline       never touch the network, use bundled prices
   --help          this message
@@ -32,11 +36,27 @@ What this sends over the network
   If the request fails for any reason, the report says so and names the prices
   it used instead.
 `;
+const MAX_DAYS = 365;
+const WRITE_ERRORS = {
+  ENOENT: 'its directory does not exist',
+  EACCES: 'permission denied',
+  EPERM: 'permission denied',
+  EISDIR: 'a directory has that name',
+  EROFS: 'the file system is read-only',
+  ENOSPC: 'the disk is full',
+};
 
 export async function main(argv) {
+  // A reader that stops early, such as head, closes the pipe. That is not a failure, and the
+  // report file still has to be written.
+  for (const stream of [process.stdout, process.stderr]) {
+    stream.on('error', (error) => {
+      if (error.code !== 'EPIPE') throw error;
+    });
+  }
   let options;
   try {
-    options = parseOptions(argv);
+    options = parseOptions(argv, process.env);
   } catch (error) {
     process.stderr.write(`codex-usage-report: ${clean(error.message)}\n`
       + 'Run codex-usage-report --help to see the options.\n');
@@ -55,7 +75,7 @@ export async function main(argv) {
   }
 }
 
-function parseOptions(argv) {
+function parseOptions(argv, env) {
   let values;
   try {
     ({ values } = parseArgs({
@@ -75,32 +95,62 @@ function parseOptions(argv) {
     throw new Error(sentences.filter((sentence) => !sentence.includes('positional')).join(' '));
   }
   if (values.help) return values;
-  if (!/^[1-9]\d*$/.test(values.days) || !Number.isSafeInteger(Number(values.days))) {
-    throw new Error(`--days takes a positive whole number, not "${values.days}"`);
+  const days = /^[1-9]\d*$/.test(values.days) ? Number(values.days) : NaN;
+  if (!(days <= MAX_DAYS)) throw new Error(`--days takes a whole number from 1 to ${MAX_DAYS}, not "${values.days}"`);
+  if (!values.out || /[\\/]$/.test(values.out)) throw new Error(`--out takes a file name prefix, not "${withoutHome(values.out)}"`);
+  if (isInside(resolve(markdownPath(values.out)), resolveCodexHome(env))) {
+    throw new Error('--out points inside the Codex directory, which this tool never writes to');
   }
-  return { ...values, days: Number(values.days) };
+  return { ...values, days };
+}
+
+// The path stays as the user gave it, so the message that echoes it never shows a resolved
+// absolute path.
+function markdownPath(out) {
+  return `${out}.md`;
+}
+
+// macOS and Windows usually ignore case in paths, so compare without it there.
+function isInside(path, dir) {
+  const fold = (text) => (process.platform === 'linux' ? text : text.toLowerCase());
+  const rest = relative(fold(dir), fold(path));
+  return rest !== '' && rest.split(sep)[0] !== '..' && !isAbsolute(rest);
 }
 
 async function run(options) {
-  if (options.json) {
-    process.stderr.write('codex-usage-report: --json is not implemented yet\n');
-    process.exitCode = 1;
-    return;
-  }
-  const { columns } = process.stdout;
+  // Under --json, stdout carries only the JSON, so every message for people goes to stderr.
+  const say = options.json ? process.stderr : process.stdout;
+  const { columns } = say;
   const counts = scanCounts();
   const files = await findRolloutFiles(resolveCodexHome(process.env), counts);
   if (!files.length) {
-    process.stdout.write(renderNoSessions(whereItLooked(process.env), counts, { columns }));
+    say.write(renderNoSessions(whereItLooked(process.env), counts, { columns }));
     return;
   }
   const report = await aggregate(files, { days: options.days, counts });
   if (report.meta.usageRecordsRead === 0) {
-    process.stdout.write(renderNoRecords(report.meta, { columns }));
+    say.write(renderNoRecords(report.meta, { columns }));
     return;
   }
   const priced = applyPricing(report, await loadPrices({ offline: options.offline }));
-  process.stdout.write(renderTerminal(priced, { columns }));
+  if (options.json) {
+    process.stdout.write(renderJson(priced));
+    say.write(renderWarnings(priced, { columns }));
+  } else {
+    say.write(renderTerminal(priced, { columns }));
+  }
+
+  const path = markdownPath(options.out);
+  const shown = clean(withoutHome(path));
+  try {
+    await writeFile(path, renderMarkdown(priced));
+  } catch (error) {
+    const reason = WRITE_ERRORS[error.code] ?? error.code ?? 'unknown error';
+    process.stderr.write(`codex-usage-report: could not write ${shown}, ${reason}\n`);
+    process.exitCode = 1;
+    return;
+  }
+  say.write(`${options.json ? '' : '\n'}wrote ${shown}\n`);
 }
 
 function whereItLooked(env) {

@@ -136,3 +136,7 @@ dist
 .pnp.*
 
 temp/
+
+# Reports the tool writes when run from the repository root
+/codex-usage.md
+/codex-usage.svg

@@ -67,13 +67,14 @@ token counters. It never modifies anything under `~/.codex`.
 npx codex-usage-report [options]
 
   --out PREFIX    output prefix          (default: codex-usage)
-  --days N        rolling window length  (default: 7)
+  --days N        window, 1 to 365 days  (default: 7)
   --json          full aggregate to stdout, suppresses the table
   --offline       never touch the network, use bundled prices
   --help          this message
 ```
 
-The timezone comes from your system. It needs Node 22 or newer and has no dependencies.
+With `--json`, warnings and the name of the written file go to stderr, so stdout holds only the
+JSON. The timezone comes from your system. It needs Node 22 or newer and has no dependencies.
 
 ## What this sends over the network
 
