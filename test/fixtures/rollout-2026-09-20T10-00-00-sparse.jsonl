@@ -7,3 +7,4 @@
 {"timestamp":"2026-09-20T10:04:00.000Z","type":"token_usage_record","payload":{"thread_id":"thread-e","turn_id":"s1","session_id":"thread-e","root_turn_id":"s1","response_id":"u6","usage":{"input_tokens":"64000","cached_input_tokens":32000,"cache_write_input_tokens":0,"output_tokens":640,"reasoning_output_tokens":0,"total_tokens":64640},"turn_token_usage":{"input_tokens":"64000","cached_input_tokens":32000,"cache_write_input_tokens":0,"output_tokens":640,"reasoning_output_tokens":0,"total_tokens":64640},"thread_token_usage":{"input_tokens":15000,"cached_input_tokens":39500,"cache_write_input_tokens":0,"output_tokens":790,"reasoning_output_tokens":0,"total_tokens":79790}}}
 {"timestamp":"2026-09-20T10:05:00.000Z","type":"event_msg"}
 {"timestamp":"2026-09-20T10:06:00.000Z","type":"event_msg","payload":{"type":"token_count","info":null}}
+{"timestamp":"2026-09-20T10:07:00.000Z","type":"event_msg","payload":{"type":"token_count","info":null,"rate_limits":null}}

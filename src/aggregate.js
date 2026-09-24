@@ -184,9 +184,13 @@ function reconcile(file, entries) {
   return { file: basename(file), ok, expected, actual };
 }
 
+// A dated snapshot always beats an undated one. When time cannot order two, the one read later
+// wins, since each file holds its snapshots in time order.
 function keepLatestRateLimits(snapshots, limits, timestamp) {
   const previous = snapshots.get(limits.limit_id);
-  if (previous && !(Date.parse(timestamp) > Date.parse(previous.observedAt))) return;
+  const time = Date.parse(timestamp);
+  const previousTime = Date.parse(previous?.observedAt);
+  if (previous && (Number.isNaN(time) ? !Number.isNaN(previousTime) : time < previousTime)) return;
   snapshots.set(limits.limit_id, {
     planType: limits.plan_type ?? null,
     primary: limits.primary ?? null,

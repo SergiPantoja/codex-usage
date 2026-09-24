@@ -21,12 +21,18 @@ const RENAMED_FIELD = `${fixtures}rollout-2026-09-20T07-59-00-renamed-field.json
 const ATTRIBUTION = `${fixtures}rollout-2026-09-20T09-00-00-attribution.jsonl`;
 // Fields missing from otherwise ordinary records: u1 has no timestamp, u2 an unreadable one, the
 // next two no response_id, u5 no usage object, u6 a string for input_tokens, one event_msg no
-// payload, and a token_count no rate_limits. u1 to u4 carry 1,000, 2,000, 4,000 and 8,000
-// input. Read per test, so that a record that throws fails the tests that read it rather than
-// the whole file.
+// payload, one token_count no rate_limits and one whose rate_limits is null. u1 to u4 carry
+// 1,000, 2,000, 4,000 and 8,000 input. Read per test, so that a record that throws fails the
+// tests that read it rather than the whole file.
 const SPARSE = `${fixtures}rollout-2026-09-20T10-00-00-sparse.jsonl`;
 // One usage record, whose thread_token_usage disagrees with it on cached input only.
 const SINGLE = `${fixtures}rollout-2026-09-20T11-00-00-single.jsonl`;
+// The first four limit_ids have two rate-limit snapshots each, named after how their timestamps
+// compare. One with no timestamp or "not-a-date" is undated. The first read reports 10% used,
+// the second 20%. The newer window-dropped snapshot has another plan and leaves out the primary
+// window the older one has. The last two have no limit_id, come after a codex one, and are read
+// newest first.
+const RATE_LIMITS = `${fixtures}rollout-2026-09-20T12-00-00-rate-limits.jsonl`;
 
 // Noon on 2026-09-20 in New York, which is UTC-4 in September.
 const OPTIONS = { timeZone: 'America/New_York', now: new Date('2026-09-20T16:00:00Z'), days: 7 };
@@ -231,6 +237,38 @@ test('records the latest rate-limit snapshot per limit_id by timestamp', () => {
   const premium = report.meta.rateLimits.get('premium');
   assert.equal(premium.primary, null);
   assert.equal(premium.secondary, null);
+});
+
+test('prefers a dated rate-limit snapshot to an undated one, whichever is read first', async () => {
+  const { meta } = await aggregate([RATE_LIMITS], UTC_OPTIONS);
+  const kept = meta.rateLimits.get('undated-then-dated');
+  assert.equal(kept.primary.used_percent, 20);
+  assert.equal(kept.observedAt, '2026-09-20T12:01:00.000Z');
+  const held = meta.rateLimits.get('dated-then-undated');
+  assert.equal(held.primary.used_percent, 10);
+  assert.equal(held.observedAt, '2026-09-20T12:02:00.000Z');
+});
+
+test('keeps the later-read rate-limit snapshot when timestamps cannot order two', async () => {
+  const { meta } = await aggregate([RATE_LIMITS], UTC_OPTIONS);
+  assert.equal(meta.rateLimits.get('both-undated').primary.used_percent, 20);
+  assert.equal(meta.rateLimits.get('same-time').primary.used_percent, 20);
+});
+
+test('stores the latest rate-limit snapshot whole, and a window it leaves out as null', async () => {
+  const { meta } = await aggregate([RATE_LIMITS], UTC_OPTIONS);
+  const latest = meta.rateLimits.get('window-dropped');
+  assert.equal(latest.planType, 'pro');
+  assert.equal(latest.primary, null);
+  assert.equal(latest.secondary.used_percent, 30);
+});
+
+test('keeps rate-limit snapshots with no limit_id in a slot of their own, latest first', async () => {
+  const { meta } = await aggregate([RATE_LIMITS], UTC_OPTIONS);
+  const used = [...meta.rateLimits.values()].map((snapshot) => snapshot.primary?.used_percent);
+  assert.ok(used.includes(40));
+  assert.ok(!used.includes(50));
+  assert.equal(meta.rateLimits.get('codex').primary.used_percent, 60);
 });
 
 test('collects models, efforts, service tiers, versions and source shapes', () => {
