@@ -30,9 +30,15 @@ const SINGLE = `${fixtures}rollout-2026-09-20T11-00-00-single.jsonl`;
 // The first four limit_ids have two rate-limit snapshots each, named after how their timestamps
 // compare. One with no timestamp or "not-a-date" is undated. The first read reports 10% used,
 // the second 20%. The newer window-dropped snapshot has another plan and leaves out the primary
-// window the older one has. The last two have no limit_id, come after a codex one, and are read
-// newest first.
+// window the older one has, the newer secondary-dropped one leaves out its weekly window, and
+// the newer windows-emptied one has both windows null. The newer older-plan-read-later snapshot
+// comes first and has another plan. The last two have no limit_id, come after a codex one, and
+// are read newest first.
 const RATE_LIMITS = `${fixtures}rollout-2026-09-20T12-00-00-rate-limits.jsonl`;
+// One snapshot each, with limit_id null or "" and 70% used, newer than every snapshot in
+// RATE_LIMITS.
+const NULL_LIMIT_ID = `${fixtures}rollout-2026-09-20T13-00-00-null-limit-id.jsonl`;
+const EMPTY_LIMIT_ID = `${fixtures}rollout-2026-09-20T13-30-00-empty-limit-id.jsonl`;
 
 // Noon on 2026-09-20 in New York, which is UTC-4 in September.
 const OPTIONS = { timeZone: 'America/New_York', now: new Date('2026-09-20T16:00:00Z'), days: 7 };
@@ -227,7 +233,7 @@ test('does not count a field that is present with the value 0', () => {
   });
 });
 
-test('records the latest rate-limit snapshot per limit_id by timestamp', () => {
+test('records the latest rate-limit snapshot per limit_id by timestamp', async () => {
   // Thread B is read last but its codex snapshot is older than thread A's.
   assert.deepEqual([...report.meta.rateLimits.keys()].sort(), ['codex', 'premium']);
   const codex = report.meta.rateLimits.get('codex');
@@ -237,6 +243,10 @@ test('records the latest rate-limit snapshot per limit_id by timestamp', () => {
   const premium = report.meta.rateLimits.get('premium');
   assert.equal(premium.primary, null);
   assert.equal(premium.secondary, null);
+  const { meta } = await aggregate([RATE_LIMITS], UTC_OPTIONS);
+  const replanned = meta.rateLimits.get('older-plan-read-later');
+  assert.equal(replanned.planType, 'pro');
+  assert.equal(replanned.primary.used_percent, 20);
 });
 
 test('prefers a dated rate-limit snapshot to an undated one, whichever is read first', async () => {
@@ -261,14 +271,28 @@ test('stores the latest rate-limit snapshot whole, and a window it leaves out as
   assert.equal(latest.planType, 'pro');
   assert.equal(latest.primary, null);
   assert.equal(latest.secondary.used_percent, 30);
+  const weeklyDropped = meta.rateLimits.get('secondary-dropped');
+  assert.equal(weeklyDropped.primary.used_percent, 20);
+  assert.equal(weeklyDropped.secondary, null);
+  const emptied = meta.rateLimits.get('windows-emptied');
+  assert.deepEqual([emptied.primary, emptied.secondary], [null, null]);
 });
 
-test('keeps rate-limit snapshots with no limit_id in a slot of their own, latest first', async () => {
+test('keeps rate-limit snapshots with no limit_id in one slot keyed null, latest first', async () => {
   const { meta } = await aggregate([RATE_LIMITS], UTC_OPTIONS);
   const used = [...meta.rateLimits.values()].map((snapshot) => snapshot.primary?.used_percent);
-  assert.ok(used.includes(40));
+  assert.equal(meta.rateLimits.get(null).primary.used_percent, 40);
   assert.ok(!used.includes(50));
   assert.equal(meta.rateLimits.get('codex').primary.used_percent, 60);
+});
+
+test('puts a rate-limit snapshot whose limit_id is null or empty in the slot of those with none', async () => {
+  for (const file of [NULL_LIMIT_ID, EMPTY_LIMIT_ID]) {
+    const { meta } = await aggregate([RATE_LIMITS, file], UTC_OPTIONS);
+    const used = [...meta.rateLimits.values()].map((snapshot) => snapshot.primary?.used_percent);
+    assert.equal(meta.rateLimits.get(null).primary.used_percent, 70, file);
+    assert.ok(!used.includes(40), file);
+  }
 });
 
 test('collects models, efforts, service tiers, versions and source shapes', () => {

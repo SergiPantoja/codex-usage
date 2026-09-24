@@ -185,13 +185,15 @@ function reconcile(file, entries) {
 }
 
 // A dated snapshot always beats an undated one. When time cannot order two, the one read later
-// wins, since each file holds its snapshots in time order.
+// wins, since each file holds its snapshots in time order. A missing, null or empty limit_id
+// all mean no name, so they share one slot, which a Map would otherwise keep apart.
 function keepLatestRateLimits(snapshots, limits, timestamp) {
-  const previous = snapshots.get(limits.limit_id);
+  const limitId = limits.limit_id || null;
+  const previous = snapshots.get(limitId);
   const time = Date.parse(timestamp);
   const previousTime = Date.parse(previous?.observedAt);
   if (previous && (Number.isNaN(time) ? !Number.isNaN(previousTime) : time < previousTime)) return;
-  snapshots.set(limits.limit_id, {
+  snapshots.set(limitId, {
     planType: limits.plan_type ?? null,
     primary: limits.primary ?? null,
     secondary: limits.secondary ?? null,
