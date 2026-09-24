@@ -50,8 +50,10 @@ It reads `~/.codex/sessions/` and `~/.codex/archived_sessions/`, or the same two
 under `CODEX_HOME` if you set it, which is where Codex writes them. It counts per-request token
 usage. It reports a rolling window, month to date, and all time, and it shows your Codex rate-limit
 windows as Codex last logged them, or says a window has reset since. It writes `codex-usage.md`
-and `codex-usage.svg` to the current directory, or other names if you pass `--out`, and opens
-the image if you are on a terminal.
+and `codex-usage.svg` to the current directory, or other names if you pass `--out`. The image
+has the three period totals, a table of models, and a bar per day of the rolling window
+stacked by model. When you run it in a terminal on your own machine, it opens the image. It
+does not when output is piped, under `--json`, in CI, over SSH, or on Linux with no display.
 
 ## What it does not do
 
@@ -73,8 +75,8 @@ npx codex-usage-report [options]
   --help          this message
 ```
 
-With `--json`, warnings and the name of the written file go to stderr, so stdout holds only the
-JSON. The timezone comes from your system. It needs Node 22 or newer and has no dependencies.
+With `--json`, warnings and the names of the written files go to stderr, so stdout holds only
+the JSON. The timezone comes from your system. It needs Node 22 or newer and has no dependencies.
 
 ## What this sends over the network
 

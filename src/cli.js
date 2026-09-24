@@ -1,3 +1,4 @@
+import { spawn } from 'node:child_process';
 import { writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { isAbsolute, relative, resolve, sep } from 'node:path';
@@ -5,7 +6,7 @@ import { parseArgs } from 'node:util';
 import { aggregate } from './aggregate.js';
 import { applyPricing, loadPrices } from './pricing.js';
 import {
-  clean, renderJson, renderMarkdown, renderNoRecords, renderNoSessions, renderTerminal, renderWarnings,
+  clean, renderJson, renderMarkdown, renderNoRecords, renderNoSessions, renderSvg, renderTerminal, renderWarnings,
 } from './render.js';
 import { findRolloutFiles, resolveCodexHome, scanCounts } from './scan.js';
 
@@ -98,16 +99,17 @@ function parseOptions(argv, env) {
   const days = /^[1-9]\d*$/.test(values.days) ? Number(values.days) : NaN;
   if (!(days <= MAX_DAYS)) throw new Error(`--days takes a whole number from 1 to ${MAX_DAYS}, not "${values.days}"`);
   if (!values.out || /[\\/]$/.test(values.out)) throw new Error(`--out takes a file name prefix, not "${withoutHome(values.out)}"`);
-  if (isInside(resolve(markdownPath(values.out)), resolveCodexHome(env))) {
+  const codexHome = resolveCodexHome(env);
+  if (outputPaths(values.out).some(([path]) => isInside(resolve(path), codexHome))) {
     throw new Error('--out points inside the Codex directory, which this tool never writes to');
   }
   return { ...values, days };
 }
 
-// The path stays as the user gave it, so the message that echoes it never shows a resolved
+// The paths stay as the user gave them, so the messages that echo them never show a resolved
 // absolute path.
-function markdownPath(out) {
-  return `${out}.md`;
+function outputPaths(out) {
+  return [[`${out}.md`, renderMarkdown], [`${out}.svg`, renderSvg]];
 }
 
 // macOS and Windows usually ignore case in paths, so compare without it there.
@@ -140,17 +142,48 @@ async function run(options) {
     say.write(renderTerminal(priced, { columns }));
   }
 
-  const path = markdownPath(options.out);
-  const shown = clean(withoutHome(path));
-  try {
-    await writeFile(path, renderMarkdown(priced));
-  } catch (error) {
-    const reason = WRITE_ERRORS[error.code] ?? error.code ?? 'unknown error';
-    process.stderr.write(`codex-usage-report: could not write ${shown}, ${reason}\n`);
+  const written = [];
+  let failure = null;
+  for (const [path, render] of outputPaths(options.out)) {
+    const content = render(priced);
+    try {
+      await writeFile(path, content);
+    } catch (error) {
+      failure = `could not write ${clean(withoutHome(path))}, ${WRITE_ERRORS[error.code] ?? error.code ?? 'unknown error'}`;
+      break;
+    }
+    written.push(path);
+  }
+  if (written.length) say.write(`${options.json ? '' : '\n'}wrote ${written.map((path) => clean(withoutHome(path))).join(' and ')}\n`);
+  if (failure) {
+    process.stderr.write(`codex-usage-report: ${failure}\n`);
     process.exitCode = 1;
     return;
   }
-  say.write(`${options.json ? '' : '\n'}wrote ${shown}\n`);
+  if (!options.json) openImage(written.find((path) => path.endsWith('.svg')), process.env);
+}
+
+// Only a person at this machine's own screen wants a window. Over SSH the image would open on a
+// screen nobody is looking at, and a Linux machine with no display has nothing to show it on.
+function openImage(path, env) {
+  if (!process.stdout.isTTY || env.CI || env.SSH_CONNECTION || env.SSH_TTY) return;
+  const file = resolve(path);
+  let command;
+  if (process.platform === 'darwin') command = ['open', [file]];
+  else if (process.platform === 'linux' && (env.DISPLAY || env.WAYLAND_DISPLAY)) command = ['xdg-open', [file]];
+  // start is a cmd.exe builtin, not a program, and it takes a first quoted argument as the window
+  // title, hence the empty one. Verbatim arguments keep Node from quoting that "" again.
+  else if (process.platform === 'win32') {
+    command = ['cmd', ['/c', 'start', '""', `"${file}"`], { windowsVerbatimArguments: true, windowsHide: true }];
+  } else return;
+  const [program, args, options] = command;
+  try {
+    const child = spawn(program, args, { ...options, detached: true, stdio: 'ignore' });
+    child.on('error', () => {});
+    child.unref();
+  } catch {
+    // A missing or failing opener is not worth a message. The report and the files are done.
+  }
 }
 
 function whereItLooked(env) {

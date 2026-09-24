@@ -17,6 +17,18 @@ function md(value) {
   return clean(value).replace(/[\\`*_[\]<>|~#!&{}()]/g, '\\$&');
 }
 
+// XML 1.0 forbids most control characters even as character references, so clean replaces them
+// before escaping. Lone surrogates, U+FFFE and U+FFFF are not XML characters either.
+function xml(value) {
+  return clean(value).toWellFormed().replace(/[\ufffe\uffff]/g, '?').replace(/[&<>"']/g, (char) => XML_ENTITIES[char]);
+}
+const XML_ENTITIES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' };
+
+// A rollout file name ends in the session's thread id, which no report needs.
+function fileLabel(name) {
+  return String(name).replace(/-?[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '').replace(/\.jsonl$/, '');
+}
+
 export function renderTerminal(priced, { columns } = {}) {
   const { periods, meta, pricing } = priced;
   const width = columns > 0 ? columns : FALLBACK_COLUMNS;
@@ -78,7 +90,8 @@ export function renderWarnings(priced, { columns } = {}) {
 // as a name, so rate limits become a list.
 export function renderJson(priced) {
   const rateLimits = [...priced.meta.rateLimits].map(([limitId, snapshot]) => ({ limitId, ...snapshot }));
-  const report = { ...priced, meta: { ...priced.meta, rateLimits } };
+  const reconciliation = priced.meta.reconciliation.map((entry) => ({ ...entry, file: fileLabel(entry.file) }));
+  const report = { ...priced, meta: { ...priced.meta, rateLimits, reconciliation } };
   return `${JSON.stringify(report, (_, value) => (value instanceof Map ? Object.fromEntries(value) : value), 2)}\n`;
 }
 
@@ -100,10 +113,7 @@ export function renderMarkdown(priced) {
     '## Checks',
     markdownChecks(meta),
   ];
-  const warnings = warningLines(priced, days, md).map((warning) => {
-    const text = warning.replace(/^(WARNING|warning|note): /, '');
-    return `- ${text[0].toUpperCase()}${text.slice(1)}${text.endsWith('.') ? '' : '.'}`;
-  });
+  const warnings = warningSentences(priced, days, md).map((warning) => `- ${warning}`);
   if (warnings.length) sections.push('## Warnings', warnings.join('\n'));
   sections.push(
     '## Accuracy',
@@ -184,7 +194,7 @@ function markdownPrices(pricing, timeZone) {
 
 function markdownChecks(meta) {
   const files = meta.reconciliation.length;
-  const failed = meta.reconciliation.filter((entry) => !entry.ok).map((entry) => md(entry.file));
+  const failed = meta.reconciliation.filter((entry) => !entry.ok).map((entry) => md(fileLabel(entry.file)));
   const missing = Object.entries(meta.missingUsageFields).filter(([, count]) => count > 0)
     .map(([field, count]) => `${md(field)} in ${int(count)}`);
   const seen = (values) => (values.length ? values.map(md).join(', ') : 'none');
@@ -208,6 +218,278 @@ function markdownChecks(meta) {
       + `Session sources: ${seen(meta.sources)}.`,
     `- Reasoning efforts: ${seen(meta.efforts)}. Service tiers: ${seen(meta.serviceTiers)}.`,
   ].join('\n');
+}
+
+const SVG_WIDTH = 960;
+const SVG_PAD = 40;
+const SVG_FONT = "system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif";
+const INK = { surface: '#fcfcfb', primary: '#0b0b0b', secondary: '#52514e', grid: '#e1e0d9', axis: '#c3c2b7' };
+// The dataviz reference palette in its validated order. Each pair of neighbours stays distinct
+// under protanopia and deuteranopia, so the stack takes the slots in sequence, never skipping.
+const SERIES = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4', '#008300', '#4a3aa7', '#e34948'];
+const SEGMENT_GAP = 2;
+// Characters per line of notes. At 12.5px, a run of lowercase letters averages about 7 units each.
+const SVG_LINE = 115;
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+export function renderSvg(priced) {
+  const { periods, meta, pricing } = priced;
+  const { rolling } = periods;
+  const days = rolling.days.size;
+  const span = `${days} ${days === 1 ? 'day' : 'days'}`;
+  const inner = SVG_WIDTH - 2 * SVG_PAD;
+  const rows = sortedRows(rolling.models, clean);
+  const series = chartSeries(rows);
+  const out = [];
+  let y = SVG_PAD;
+
+  out.push(svgText(SVG_PAD, y + 20, 'Codex usage at API rates', { size: 22, weight: 600 }));
+  y += 46;
+  out.push(svgText(SVG_PAD, y, 'What these Codex sessions would have cost through the OpenAI API.',
+    { size: 14, ink: 'secondary' }));
+  y += 24;
+
+  const tileGap = 16;
+  const tileWidth = (inner - 2 * tileGap) / 3;
+  const tileHeight = 124;
+  [[`Last ${span}`, rolling], ['Month to date', periods.mtd], ['All time', periods.allTime]].forEach(([label, period], i) => {
+    const x = SVG_PAD + i * (tileWidth + tileGap);
+    const total = sumRows(period.models.values());
+    const detail = total.requests
+      ? `${int(total.requests)} ${plural(total.requests, 'request', 'requests')}, `
+        + `${percent(total.cachedInputTokens, total.inputTokens)} of input cached`
+      : 'no requests';
+    out.push(`<rect x="${num(x)}" y="${num(y)}" width="${num(tileWidth)}" height="${tileHeight}" rx="8" `
+      + `fill="${INK.surface}" stroke="${INK.primary}" stroke-opacity="0.1"/>`);
+    out.push(svgText(x + 16, y + 26, label, { ink: 'secondary' }));
+    out.push(svgText(x + 16, y + 64, money(knownCost(period.models, period.cost)), { size: 30, weight: 600 }));
+    out.push(svgText(x + 16, y + 88, detail, { size: 12, ink: 'secondary' }));
+    out.push(svgText(x + 16, y + 106, period.startDay ? dayRange(period) : 'no dated requests',
+      { size: 12, ink: 'secondary' }));
+  });
+  y += tileHeight + 40;
+
+  out.push(svgText(SVG_PAD, y, `Cost per day, ${dayRange(rolling)}`, { size: 15, weight: 600 }));
+  y += 30;
+  const plot = { left: SVG_PAD + 56, right: SVG_WIDTH - SVG_PAD, top: y, height: 220 };
+  out.push(...dailyChart(rolling, rows, series, plot, span));
+  y += plot.height + 58;
+
+  out.push(svgText(SVG_PAD, y, `By model, last ${span}`, { size: 15, weight: 600 }));
+  y += 28;
+  if (rows.length) {
+    y = svgModelTable(out, rolling, rows, series, y);
+  } else {
+    out.push(svgText(SVG_PAD, y, `No requests in the last ${span}.`, { ink: 'secondary' }));
+    y += 20;
+  }
+
+  const warnings = warningSentences(priced, days, clean);
+  if (warnings.length) {
+    y += 14;
+    for (const line of warnings.flatMap((warning) => wrapPlain(warning, SVG_LINE))) {
+      out.push(svgText(SVG_PAD, y, line, { size: 12.5 }));
+      y += 18;
+    }
+  }
+
+  y += 16;
+  out.push(`<line x1="${SVG_PAD}" y1="${num(y)}" x2="${SVG_WIDTH - SVG_PAD}" y2="${num(y)}" stroke="${INK.grid}"/>`);
+  y += 22;
+  const footer = [
+    `Generated ${localTime(meta.generatedAt, meta.timeZone)} (${meta.timeZone}) by codex-usage-report`,
+    capitalised(pricingLine(pricing, meta.timeZone)),
+    capitalised(validationLine(meta)),
+    FAST_BUG,
+  ];
+  for (const line of footer.flatMap((text) => wrapPlain(text, SVG_LINE))) {
+    out.push(svgText(SVG_PAD, y, line, { size: 12, ink: 'secondary' }));
+    y += 18;
+  }
+
+  const height = Math.ceil(y - 18 + SVG_PAD);
+  const title = `Codex usage at API rates, ${money(knownCost(rolling.models, rolling.cost))} in the last ${span}`;
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${SVG_WIDTH}" height="${height}" viewBox="0 0 ${SVG_WIDTH} ${height}" `
+      + `role="img" aria-labelledby="title" font-family="${SVG_FONT}">`,
+    `<title id="title">${xml(title)}</title>`,
+    `<rect width="${SVG_WIDTH}" height="${height}" fill="${INK.surface}"/>`,
+    ...out,
+    '</svg>',
+    '',
+  ].join('\n');
+}
+
+// Only priced models can stack, since the bar height is cost. They take the slots in the table's
+// order. Past the eighth, models share the last slot rather than a made-up colour.
+function chartSeries(rows) {
+  const series = [];
+  rows.filter((row) => row.cost != null).forEach((row, i) => {
+    if (i < SERIES.length) series.push({ color: SERIES[i], slugs: [row.slug] });
+    else series.at(-1).slugs.push(row.slug);
+  });
+  return series;
+}
+
+function dailyChart(period, rows, series, plot, span) {
+  const out = [];
+  const bars = [...period.days].map(([day, table]) => {
+    const segments = series
+      .map(({ color, slugs }) => ({ color, value: slugs.reduce((sum, slug) => sum + (table.get(slug)?.cost ?? 0), 0) }))
+      .filter(({ value }) => value > 0);
+    return { day, table, segments, total: segments.reduce((sum, { value }) => sum + value, 0) };
+  });
+  const width = plot.right - plot.left;
+  const band = width / bars.length;
+  const barWidth = Math.min(24, band * 0.6);
+  const bottom = plot.top + plot.height;
+  const peak = Math.max(0, ...bars.map((bar) => bar.total));
+
+  let scale = () => bottom;
+  if (peak > 0) {
+    const step = niceStep(peak / 4);
+    const ticks = Math.ceil(peak / step - 1e-9);
+    const top = ticks * step;
+    scale = (value) => plot.top + plot.height * (1 - value / top);
+    for (let i = 1; i <= ticks; i += 1) {
+      const tickY = num(scale(i * step));
+      out.push(`<line x1="${plot.left}" y1="${tickY}" x2="${plot.right}" y2="${tickY}" stroke="${INK.grid}"/>`);
+    }
+    for (let i = 0; i <= ticks; i += 1) {
+      out.push(svgText(plot.left - 10, scale(i * step) + 4, tickMoney(i * step, step),
+        { size: 12, ink: 'secondary', anchor: 'end', numeric: true }));
+    }
+  } else {
+    const message = rows.length ? `No priced requests in the last ${span}` : `No requests in the last ${span}`;
+    out.push(svgText(plot.left + width / 2, plot.top + plot.height / 2, message, { ink: 'secondary', anchor: 'middle' }));
+  }
+
+  bars.forEach(({ day, table, segments, total }, i) => {
+    const bandX = plot.left + i * band;
+    const x = bandX + (band - barWidth) / 2;
+    const lines = [`${day} · ${money(total)}`,
+      ...sortedRows(table, clean).map((row) => `${fit(row.label, 40)} ${money(row.cost)}`)];
+    out.push('<g>', `<title>${lines.map(xml).join('\n')}</title>`,
+      `<rect x="${num(bandX)}" y="${plot.top}" width="${num(band)}" height="${plot.height}" fill="${INK.surface}" fill-opacity="0"/>`);
+    let base = 0;
+    segments.forEach(({ color, value }, j) => {
+      const low = scale(base);
+      base += value;
+      const high = scale(base);
+      // The segment below each boundary gives up two pixels, so a surface gap separates the colours.
+      if (j === segments.length - 1) out.push(roundedTop(x, high, barWidth, low - high, color));
+      else if (low - high > SEGMENT_GAP) {
+        out.push(`<rect x="${num(x)}" y="${num(high + SEGMENT_GAP)}" width="${num(barWidth)}" `
+          + `height="${num(low - high - SEGMENT_GAP)}" fill="${color}"/>`);
+      }
+    });
+    out.push('</g>');
+  });
+
+  out.push(`<line x1="${plot.left}" y1="${bottom}" x2="${plot.right}" y2="${bottom}" stroke="${INK.axis}"/>`);
+  if (peak > 0) {
+    const index = bars.findIndex((bar) => bar.total === peak);
+    const x = Math.min(Math.max(plot.left + (index + 0.5) * band, plot.left + 28), plot.right - 28);
+    out.push(svgText(x, scale(peak) - 8, money(peak), { size: 12, anchor: 'middle', numeric: true }));
+  }
+  // Labels count back from the last day, so today always has one.
+  const every = Math.ceil(52 / band);
+  bars.forEach(({ day }, i) => {
+    if ((bars.length - 1 - i) % every) return;
+    out.push(svgText(plot.left + (i + 0.5) * band, bottom + 20, shortDay(day), { size: 12, ink: 'secondary', anchor: 'middle' }));
+  });
+  return out;
+}
+
+function svgModelTable(out, period, rows, series, top) {
+  const right = SVG_WIDTH - SVG_PAD;
+  const columns = [
+    ['Requests', right - 530, (row) => int(row.requests)],
+    ['Input', right - 420, (row) => int(row.inputTokens)],
+    ['Cached input', right - 305, (row) => int(row.cachedInputTokens)],
+    ['Output', right - 205, (row) => int(row.outputTokens)],
+    ['Cached share', right - 100, (row) => percent(row.cachedInputTokens, row.inputTokens)],
+    ['Cost', right, (row) => money(row.cost)],
+  ];
+  const colorOf = new Map(series.flatMap(({ color, slugs }) => slugs.map((slug) => [slug, color])));
+  const line = (y, color = INK.grid) =>
+    `<line x1="${SVG_PAD}" y1="${num(y)}" x2="${right}" y2="${num(y)}" stroke="${color}"/>`;
+  const cells = (row, y, style) => columns.map(([, x, value]) => svgText(x, y, value(row), { ...style, anchor: 'end', numeric: true }));
+
+  let y = top;
+  out.push(svgText(SVG_PAD, y, 'Model', { size: 12, ink: 'secondary' }),
+    ...columns.map(([header, x]) => svgText(x, y, header, { size: 12, ink: 'secondary', anchor: 'end' })));
+  out.push(line(y + 9));
+  y += 30;
+  for (const row of rows) {
+    const color = colorOf.get(row.slug);
+    if (color) out.push(`<rect x="${SVG_PAD}" y="${num(y - 10)}" width="10" height="10" rx="2" fill="${color}"/>`);
+    out.push(svgText(SVG_PAD + 18, y, fit(row.label, 34)), ...cells(row, y, {}));
+    y += 26;
+  }
+  out.push(line(y - 17, INK.axis));
+  y += 4;
+  const total = { ...sumRows(period.models.values()), cost: knownCost(period.models, period.cost) };
+  out.push(svgText(SVG_PAD + 18, y, 'Total', { weight: 600 }), ...cells(total, y, { weight: 600 }));
+  y += 26;
+  if (period.compaction.size) {
+    const compaction = { ...sumRows(period.compaction.values()), cost: knownCost(period.compaction, period.compactionCost) };
+    out.push(svgText(SVG_PAD + 18, y, 'of which compaction', { ink: 'secondary' }),
+      ...cells(compaction, y, { ink: 'secondary' }));
+    y += 26;
+  }
+  return y;
+}
+
+function svgText(x, y, content, { size = 13, weight, ink = 'primary', anchor, numeric } = {}) {
+  const attributes = [`x="${num(x)}"`, `y="${num(y)}"`, `font-size="${size}"`, `fill="${INK[ink]}"`];
+  if (weight) attributes.push(`font-weight="${weight}"`);
+  if (anchor) attributes.push(`text-anchor="${anchor}"`);
+  if (numeric) attributes.push('style="font-variant-numeric: tabular-nums"');
+  return `<text ${attributes.join(' ')}>${xml(content)}</text>`;
+}
+
+// Square at the baseline, rounded where the bar ends.
+function roundedTop(x, y, width, height, fill) {
+  const r = Math.min(4, width / 2, height);
+  return `<path d="M${num(x)} ${num(y + height)}V${num(y + r)}A${num(r)} ${num(r)} 0 0 1 ${num(x + r)} ${num(y)}`
+    + `H${num(x + width - r)}A${num(r)} ${num(r)} 0 0 1 ${num(x + width)} ${num(y + r)}V${num(y + height)}Z" fill="${fill}"/>`;
+}
+
+function niceStep(rough) {
+  const power = 10 ** Math.floor(Math.log10(rough));
+  return [1, 2, 2.5, 5, 10].find((multiple) => multiple * power >= rough * (1 - 1e-9)) * power;
+}
+
+function tickMoney(value, step) {
+  let decimals = 0;
+  while (decimals < 6 && Math.abs(Math.round(step * 10 ** decimals) - step * 10 ** decimals) > 1e-6) decimals += 1;
+  if (decimals > 0) decimals = Math.max(decimals, 2);
+  return `$${value.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}`;
+}
+
+function dayRange({ startDay, endDay }) {
+  return startDay === endDay ? startDay : `${startDay} to ${endDay}`;
+}
+
+function shortDay(day) {
+  const [, month, date] = day.split('-').map(Number);
+  return `${MONTHS[month - 1]} ${date}`;
+}
+
+function num(value) {
+  return String(Math.round(value * 100) / 100);
+}
+
+function capitalised(text) {
+  return `${text[0].toUpperCase()}${text.slice(1)}`;
+}
+
+// SVG text does not wrap, and a slug has no spaces to wrap at, so a word longer than a line breaks.
+function wrapPlain(text, width) {
+  const words = text.split(' ').flatMap((word) => word.match(new RegExp(`.{1,${width}}`, 'gu')) ?? ['']);
+  return joinWrapped(words, ' ', width).map((line) => line.trimStart());
 }
 
 function modelTable(period, width, days) {
@@ -256,7 +538,7 @@ const TABLE_COLUMNS = [
 const DROP_ORDER = ['cached', 'output', 'requests', 'input'];
 
 function sortedRows(table, escape) {
-  return [...table].map(([slug, row]) => ({ label: escape(slug), ...row })).sort(byCost);
+  return [...table].map(([slug, row]) => ({ slug, label: escape(slug), ...row })).sort(byCost);
 }
 
 // Highest cost first. Unpriced models have no cost to rank by, so they follow, by input.
@@ -356,7 +638,7 @@ function warningLines({ meta, pricing }, days, escape = clean) {
 
   const mismatched = meta.reconciliation.filter((entry) => !entry.ok);
   if (mismatched.length) {
-    const names = mismatched.slice(0, 3).map((entry) => escape(entry.file));
+    const names = mismatched.slice(0, 3).map((entry) => escape(fileLabel(entry.file)));
     if (mismatched.length > 3) names.push(`${mismatched.length - 3} more`);
     warnings.push(`warning: in ${mismatched.length} of ${meta.reconciliation.length} files the per-request `
       + `usage does not add up to Codex's own running total, so totals may be wrong (${names.join(', ')})`);
@@ -414,6 +696,14 @@ function warningLines({ meta, pricing }, days, escape = clean) {
       + `If the cost looks wrong, please open an issue at ${ISSUES_URL}`);
   }
   return warnings;
+}
+
+// The Markdown and the SVG give the terminal's warnings as sentences.
+function warningSentences(priced, days, escape) {
+  return warningLines(priced, days, escape).map((warning) => {
+    const text = warning.replace(/^(WARNING|warning|note): /, '');
+    return `${capitalised(text)}${text.endsWith('.') ? '' : '.'}`;
+  });
 }
 
 // A lost directory, a file cut short or a broken line can each drop usage, and reconciliation
