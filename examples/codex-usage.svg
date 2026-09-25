@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="958" viewBox="0 0 960 958" role="img" aria-labelledby="title" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif">
+<title id="title">Codex usage at API rates, $90.44 in the last 7 days</title>
+<rect width="960" height="958" fill="#fcfcfb"/>
+<text x="40" y="60" font-size="22" fill="#0b0b0b" font-weight="600">Codex usage at API rates</text>
+<text x="40" y="86" font-size="14" fill="#52514e">What these Codex sessions would have cost through the OpenAI API.</text>
+<rect x="40" y="110" width="282.67" height="124" rx="8" fill="#fcfcfb" stroke="#0b0b0b" stroke-opacity="0.1"/>
+<text x="56" y="136" font-size="13" fill="#52514e">Last 7 days</text>
+<text x="56" y="174" font-size="30" fill="#0b0b0b" font-weight="600">$90.44</text>
+<text x="56" y="198" font-size="12" fill="#52514e">931 requests, 95.0% of input cached</text>
+<text x="56" y="216" font-size="12" fill="#52514e">2026-09-18 to 2026-09-24</text>
+<rect x="338.67" y="110" width="282.67" height="124" rx="8" fill="#fcfcfb" stroke="#0b0b0b" stroke-opacity="0.1"/>
+<text x="354.67" y="136" font-size="13" fill="#52514e">Month to date</text>
+<text x="354.67" y="174" font-size="30" fill="#0b0b0b" font-weight="600">$291.25</text>
+<text x="354.67" y="198" font-size="12" fill="#52514e">3,030 requests, 95.1% of input cached</text>
+<text x="354.67" y="216" font-size="12" fill="#52514e">2026-09-01 to 2026-09-24</text>
+<rect x="637.33" y="110" width="282.67" height="124" rx="8" fill="#fcfcfb" stroke="#0b0b0b" stroke-opacity="0.1"/>
+<text x="653.33" y="136" font-size="13" fill="#52514e">All time</text>
+<text x="653.33" y="174" font-size="30" fill="#0b0b0b" font-weight="600">$350.10</text>
+<text x="653.33" y="198" font-size="12" fill="#52514e">3,713 requests, 95.2% of input cached</text>
+<text x="653.33" y="216" font-size="12" fill="#52514e">2026-08-24 to 2026-09-24</text>
+<text x="40" y="274" font-size="15" fill="#0b0b0b" font-weight="600">Cost per day, 2026-09-18 to 2026-09-24</text>
+<line x1="96" y1="469" x2="920" y2="469" stroke="#e1e0d9"/>
+<line x1="96" y1="414" x2="920" y2="414" stroke="#e1e0d9"/>
+<line x1="96" y1="359" x2="920" y2="359" stroke="#e1e0d9"/>
+<line x1="96" y1="304" x2="920" y2="304" stroke="#e1e0d9"/>
+<text x="86" y="528" font-size="12" fill="#52514e" text-anchor="end" style="font-variant-numeric: tabular-nums">$0</text>
+<text x="86" y="473" font-size="12" fill="#52514e" text-anchor="end" style="font-variant-numeric: tabular-nums">$10</text>
+<text x="86" y="418" font-size="12" fill="#52514e" text-anchor="end" style="font-variant-numeric: tabular-nums">$20</text>
+<text x="86" y="363" font-size="12" fill="#52514e" text-anchor="end" style="font-variant-numeric: tabular-nums">$30</text>
+<text x="86" y="308" font-size="12" fill="#52514e" text-anchor="end" style="font-variant-numeric: tabular-nums">$40</text>
+<g>
+<title>2026-09-18 · $14.98
+gpt-6-astra $9.75
+gpt-5.6-sol $5.22</title>
+<rect x="96" y="304" width="117.71" height="220" fill="#fcfcfb" fill-opacity="0"/>
+<rect x="142.86" y="472.35" width="24" height="51.65" fill="#2a78d6"/>
+<path d="M142.86 470.35V445.63A4 4 0 0 1 146.86 441.63H162.86A4 4 0 0 1 166.86 445.63V470.35Z" fill="#eb6834"/>
+</g>
+<g>
+<title>2026-09-19 · $7.99
+gpt-6-astra $4.65
+gpt-5.6-sol $3.25
+gpt-5.6-luna $0.09</title>
+<rect x="213.71" y="304" width="117.71" height="220" fill="#fcfcfb" fill-opacity="0"/>
+<rect x="260.57" y="500.45" width="24" height="23.55" fill="#2a78d6"/>
+<rect x="260.57" y="482.59" width="24" height="15.86" fill="#eb6834"/>
+<path d="M260.57 480.59V480.59A0.51 0.51 0 0 1 261.08 480.08H284.07A0.51 0.51 0 0 1 284.57 480.59V480.59Z" fill="#e87ba4"/>
+</g>
+<g>
+<title>2026-09-20 · $0.00</title>
+<rect x="331.43" y="304" width="117.71" height="220" fill="#fcfcfb" fill-opacity="0"/>
+</g>
+<g>
+<title>2026-09-21 · $12.16
+gpt-6-astra $7.36
+gpt-5.6-sol $4.08
+gpt-5.6-terra $0.73</title>
+<rect x="449.14" y="304" width="117.71" height="220" fill="#fcfcfb" fill-opacity="0"/>
+<rect x="496" y="485.53" width="24" height="38.47" fill="#2a78d6"/>
+<rect x="496" y="463.09" width="24" height="20.43" fill="#eb6834"/>
+<path d="M496 461.09V461.09A3.99 3.99 0 0 1 499.99 457.1H516.01A3.99 3.99 0 0 1 520 461.09V461.09Z" fill="#1baf7a"/>
+</g>
+<g>
+<title>2026-09-22 · $30.12
+gpt-6-astra $19.99
+gpt-5.6-sol $9.57
+gpt-6-sol $0.56</title>
+<rect x="566.86" y="304" width="117.71" height="220" fill="#fcfcfb" fill-opacity="0"/>
+<rect x="613.71" y="416.06" width="24" height="107.94" fill="#2a78d6"/>
+<rect x="613.71" y="363.42" width="24" height="50.64" fill="#eb6834"/>
+<path d="M613.71 361.42V361.42A3.09 3.09 0 0 1 616.81 358.33H634.62A3.09 3.09 0 0 1 637.71 361.42V361.42Z" fill="#eda100"/>
+</g>
+<g>
+<title>2026-09-23 · $15.18
+gpt-6-astra $9.00
+gpt-5.6-sol $5.06
+gpt-5.6-terra $0.74
+gpt-6-sol $0.38</title>
+<rect x="684.57" y="304" width="117.71" height="220" fill="#fcfcfb" fill-opacity="0"/>
+<rect x="731.43" y="476.52" width="24" height="47.48" fill="#2a78d6"/>
+<rect x="731.43" y="448.68" width="24" height="25.84" fill="#eb6834"/>
+<rect x="731.43" y="444.62" width="24" height="2.05" fill="#1baf7a"/>
+<path d="M731.43 442.62V442.62A2.1 2.1 0 0 1 733.53 440.52H753.33A2.1 2.1 0 0 1 755.43 442.62V442.62Z" fill="#eda100"/>
+</g>
+<g>
+<title>2026-09-24 · $10.01
+gpt-6-astra $6.52
+gpt-5.6-sol $3.50</title>
+<rect x="802.29" y="304" width="117.71" height="220" fill="#fcfcfb" fill-opacity="0"/>
+<rect x="849.14" y="490.16" width="24" height="33.84" fill="#2a78d6"/>
+<path d="M849.14 488.16V472.92A4 4 0 0 1 853.14 468.92H869.14A4 4 0 0 1 873.14 472.92V488.16Z" fill="#eb6834"/>
+</g>
+<line x1="96" y1="524" x2="920" y2="524" stroke="#c3c2b7"/>
+<text x="625.71" y="350.33" font-size="12" fill="#0b0b0b" text-anchor="middle" style="font-variant-numeric: tabular-nums">$30.12</text>
+<text x="154.86" y="544" font-size="12" fill="#52514e" text-anchor="middle">Sep 18</text>
+<text x="272.57" y="544" font-size="12" fill="#52514e" text-anchor="middle">Sep 19</text>
+<text x="390.29" y="544" font-size="12" fill="#52514e" text-anchor="middle">Sep 20</text>
+<text x="508" y="544" font-size="12" fill="#52514e" text-anchor="middle">Sep 21</text>
+<text x="625.71" y="544" font-size="12" fill="#52514e" text-anchor="middle">Sep 22</text>
+<text x="743.43" y="544" font-size="12" fill="#52514e" text-anchor="middle">Sep 23</text>
+<text x="861.14" y="544" font-size="12" fill="#52514e" text-anchor="middle">Sep 24</text>
+<text x="40" y="582" font-size="15" fill="#0b0b0b" font-weight="600">By model, last 7 days</text>
+<text x="40" y="610" font-size="12" fill="#52514e">Model</text>
+<text x="390" y="610" font-size="12" fill="#52514e" text-anchor="end">Requests</text>
+<text x="500" y="610" font-size="12" fill="#52514e" text-anchor="end">Input</text>
+<text x="615" y="610" font-size="12" fill="#52514e" text-anchor="end">Cached input</text>
+<text x="715" y="610" font-size="12" fill="#52514e" text-anchor="end">Output</text>
+<text x="820" y="610" font-size="12" fill="#52514e" text-anchor="end">Cached share</text>
+<text x="920" y="610" font-size="12" fill="#52514e" text-anchor="end">Cost</text>
+<line x1="40" y1="619" x2="920" y2="619" stroke="#e1e0d9"/>
+<rect x="40" y="630" width="10" height="10" rx="2" fill="#2a78d6"/>
+<text x="58" y="640" font-size="13" fill="#0b0b0b">gpt-6-astra</text>
+<text x="390" y="640" font-size="13" fill="#0b0b0b" text-anchor="end" style="font-variant-numeric: tabular-nums">406</text>
+<text x="500" y="640" font-size="13" fill="#0b0b0b" text-anchor="end" style="font-variant-numeric: tabular-nums">35,373,023</text>
+<text x="615" y="640" font-size="13" fill="#0b0b0b" text-anchor="end" style="font-variant-numeric: tabular-nums">33,741,440</text>
+<text x="715" y="640" font-size="13" fill="#0b0b0b" text-anchor="end" style="font-variant-numeric: tabular-nums">144,059</text>
+<text x="820" y="640" font-size="13" fill="#0b0b0b" text-anchor="end" style="font-variant-numeric: tabular-nums">95.4%</text>
+<text x="920" y="640" font-size="13" fill="#0b0b0b" text-anchor="end" style="font-variant-numeric: tabular-nums">$57.26</text>
+<rect x="40" y="656" width="10" height="10" rx="2" fill="#eb6834"/>
+<text x="58" y="666" font-size="13" fill="#0b0b0b">gpt-5.6-sol</text>
+<text x="390" y="666" font-size="13" fill="#0b0b0b" text-anchor="end" style="font-variant-numeric: tabular-nums">415</text>
+<text x="500" y="666" font-size="13" fill="#0b0b0b" text-anchor="end" style="font-variant-numeric: tabular-nums">48,893,524</text>
+<text x="615" y="666" font-size="13" fill="#0b0b0b" text-anchor="end" style="font-variant-numeric: tabular-nums">46,749,056</text>
+<text x="715" y="666" font-size="13" fill="#0b0b0b" text-anchor="end" style="font-variant-numeric: tabular-nums">170,062</text>
+<text x="820" y="666" font-size="13" fill="#0b0b0b" text-anchor="end" style="font-variant-numeric: tabular-nums">95.6%</text>
+<text x="920" y="666" font-size="13" fill="#0b0b0b" text-anchor="end" style="font-variant-numeric: tabular-nums">$30.68</text>
+<rect x="40" y="682" width="10" height="10" rx="2" fill="#1baf7a"/>
+<text x="58" y="692" font-size="13" fill="#0b0b0b">gpt-5.6-terra</text>
+<text x="390" y="692" font-size="13" fill="#0b0b0b" text-anchor="end" style="font-variant-numeric: tabular-nums">36</text>
+<text x="500" y="692" font-size="13" fill="#0b0b0b" text-anchor="end" style="font-variant-numeric: tabular-nums">2,242,358</text>
+<text x="615" y="692" font-size="13" fill="#0b0b0b" text-anchor="end" style="font-variant-numeric: tabular-nums">1,746,816</text>
+<text x="715" y="692" font-size="13" fill="#0b0b0b" text-anchor="end" style="font-variant-numeric: tabular-nums">10,147</text>
+<text x="820" y="692" font-size="13" fill="#0b0b0b" text-anchor="end" style="font-variant-numeric: tabular-nums">77.9%</text>
+<text x="920" y="692" font-size="13" fill="#0b0b0b" text-anchor="end" style="font-variant-numeric: tabular-nums">$1.46</text>
+<rect x="40" y="708" width="10" height="10" rx="2" fill="#eda100"/>
+<text x="58" y="718" font-size="13" fill="#0b0b0b">gpt-6-sol</text>
+<text x="390" y="718" font-size="13" fill="#0b0b0b" text-anchor="end" style="font-variant-numeric: tabular-nums">50</text>
+<text x="500" y="718" font-size="13" fill="#0b0b0b" text-anchor="end" style="font-variant-numeric: tabular-nums">2,727,017</text>
+<text x="615" y="718" font-size="13" fill="#0b0b0b" text-anchor="end" style="font-variant-numeric: tabular-nums">2,552,832</text>
+<text x="715" y="718" font-size="13" fill="#0b0b0b" text-anchor="end" style="font-variant-numeric: tabular-nums">8,511</text>
+<text x="820" y="718" font-size="13" fill="#0b0b0b" text-anchor="end" style="font-variant-numeric: tabular-nums">93.6%</text>
+<text x="920" y="718" font-size="13" fill="#0b0b0b" text-anchor="end" style="font-variant-numeric: tabular-nums">$0.94</text>
+<rect x="40" y="734" width="10" height="10" rx="2" fill="#e87ba4"/>
+<text x="58" y="744" font-size="13" fill="#0b0b0b">gpt-5.6-luna</text>
+<text x="390" y="744" font-size="13" fill="#0b0b0b" text-anchor="end" style="font-variant-numeric: tabular-nums">24</text>
+<text x="500" y="744" font-size="13" fill="#0b0b0b" text-anchor="end" style="font-variant-numeric: tabular-nums">2,130,366</text>
+<text x="615" y="744" font-size="13" fill="#0b0b0b" text-anchor="end" style="font-variant-numeric: tabular-nums">1,988,864</text>
+<text x="715" y="744" font-size="13" fill="#0b0b0b" text-anchor="end" style="font-variant-numeric: tabular-nums">19,979</text>
+<text x="820" y="744" font-size="13" fill="#0b0b0b" text-anchor="end" style="font-variant-numeric: tabular-nums">93.4%</text>
+<text x="920" y="744" font-size="13" fill="#0b0b0b" text-anchor="end" style="font-variant-numeric: tabular-nums">$0.09</text>
+<line x1="40" y1="753" x2="920" y2="753" stroke="#c3c2b7"/>
+<text x="58" y="774" font-size="13" fill="#0b0b0b" font-weight="600">Total</text>
+<text x="390" y="774" font-size="13" fill="#0b0b0b" font-weight="600" text-anchor="end" style="font-variant-numeric: tabular-nums">931</text>
+<text x="500" y="774" font-size="13" fill="#0b0b0b" font-weight="600" text-anchor="end" style="font-variant-numeric: tabular-nums">91,366,288</text>
+<text x="615" y="774" font-size="13" fill="#0b0b0b" font-weight="600" text-anchor="end" style="font-variant-numeric: tabular-nums">86,779,008</text>
+<text x="715" y="774" font-size="13" fill="#0b0b0b" font-weight="600" text-anchor="end" style="font-variant-numeric: tabular-nums">352,758</text>
+<text x="820" y="774" font-size="13" fill="#0b0b0b" font-weight="600" text-anchor="end" style="font-variant-numeric: tabular-nums">95.0%</text>
+<text x="920" y="774" font-size="13" fill="#0b0b0b" font-weight="600" text-anchor="end" style="font-variant-numeric: tabular-nums">$90.44</text>
+<text x="58" y="800" font-size="13" fill="#52514e">of which compaction</text>
+<text x="390" y="800" font-size="13" fill="#52514e" text-anchor="end" style="font-variant-numeric: tabular-nums">3</text>
+<text x="500" y="800" font-size="13" fill="#52514e" text-anchor="end" style="font-variant-numeric: tabular-nums">657,990</text>
+<text x="615" y="800" font-size="13" fill="#52514e" text-anchor="end" style="font-variant-numeric: tabular-nums">638,208</text>
+<text x="715" y="800" font-size="13" fill="#52514e" text-anchor="end" style="font-variant-numeric: tabular-nums">7,600</text>
+<text x="820" y="800" font-size="13" fill="#52514e" text-anchor="end" style="font-variant-numeric: tabular-nums">97.0%</text>
+<text x="920" y="800" font-size="13" fill="#52514e" text-anchor="end" style="font-variant-numeric: tabular-nums">$0.49</text>
+<line x1="40" y1="842" x2="920" y2="842" stroke="#e1e0d9"/>
+<text x="40" y="864" font-size="12" fill="#52514e">Generated 2026-09-24 02:45 (America/New_York) by codex-usage-report</text>
+<text x="40" y="882" font-size="12" fill="#52514e">Prices from LiteLLM, fetched 2026-09-24 02:45</text>
+<text x="40" y="900" font-size="12" fill="#52514e">Checked 111 files · 3,713 requests · 0 duplicates · all 111 files reconcile</text>
+<text x="40" y="918" font-size="12" fill="#52514e">Fast mode is not logged (openai/codex#30413). It costs 2x the rates used here.</text>
+</svg>

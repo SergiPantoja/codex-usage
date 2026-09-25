@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: ${{ matrix.os }}, Node ${{ matrix.node }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node: [22, 24]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+
+      # node --check reads only its first file and passes the rest to it as arguments.
+      - name: Syntax check
+        run: ls bin/*.js src/*.js scripts/*.js | xargs -n1 node --check
+
+      - name: Unit tests
+        run: node --test
+
+      - name: Help
+        run: |
+          node bin/codex-usage-report.js --help > help.txt
+          grep -q 'What this sends over the network' help.txt
+
+      # One fixture in a scratch CODEX_HOME walks the directories, checks --out against it and
+      # writes both files, which is where Windows paths would break.
+      - name: Offline run against a fixture
+        run: |
+          home="$RUNNER_TEMP/codex-home"
+          out="$RUNNER_TEMP/out"
+          mkdir -p "$home/sessions/2026/09/16" "$out"
+          cp test/fixtures/rollout-2026-09-16T10-00-00-thread-a.jsonl "$home/sessions/2026/09/16/"
+          cd "$out"
+          CODEX_HOME="$home" node "$GITHUB_WORKSPACE/bin/codex-usage-report.js" --offline > report.txt
+          cat report.txt
+          grep -q 'the file reconciles' report.txt
+          test -s codex-usage.md
+          test -s codex-usage.svg
+          if grep -E 'private-project|secret_agent_path|Nickname-Sagan|SECRET' report.txt codex-usage.md codex-usage.svg; then
+            exit 1
+          fi
