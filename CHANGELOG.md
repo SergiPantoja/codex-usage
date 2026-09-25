@@ -4,6 +4,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-09-25
+
 ### Added
 
 - Reads the Codex session logs in `~/.codex/sessions` and `~/.codex/archived_sessions`, or
@@ -21,4 +23,5 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   warnings when files cannot be read, when the logs do not match the expected format, or
   when a model has no published price.
 
-[Unreleased]: https://github.com/SergiPantoja/codex-usage/commits/main
+[Unreleased]: https://github.com/SergiPantoja/codex-usage/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/SergiPantoja/codex-usage/releases/tag/v0.1.0

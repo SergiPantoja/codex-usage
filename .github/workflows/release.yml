@@ -1,0 +1,81 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*.*.*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  validate:
+    name: Tag, version and changelog agree
+    runs-on: ubuntu-latest
+    outputs:
+      notes: ${{ steps.check.outputs.notes }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Check the tag and extract the release notes
+        id: check
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if [ "$GITHUB_REF_TYPE" != tag ] || [ "$GITHUB_REF_NAME" != "v$version" ]; then
+            echo "::error::This run is on $GITHUB_REF_TYPE $GITHUB_REF_NAME. Only the tag v$version, from package.json, can release."
+            exit 1
+          fi
+          awk -v heading="## [$version]" '
+            index($0, heading) == 1 { found = 1; next }
+            found && (/^## \[/ || /^\[.*\]: /) { exit }
+            found { print }
+          ' CHANGELOG.md > "$RUNNER_TEMP/notes.md"
+          if ! grep -q '[^[:space:]]' "$RUNNER_TEMP/notes.md"; then
+            echo "::error::CHANGELOG.md has no entries under ## [$version]"
+            exit 1
+          fi
+          {
+            echo 'notes<<END_OF_NOTES'
+            cat "$RUNNER_TEMP/notes.md"
+            echo 'END_OF_NOTES'
+          } >> "$GITHUB_OUTPUT"
+
+  publish:
+    name: Stage on npm
+    needs: [ci, validate]
+    runs-on: ubuntu-latest
+    # The npm environment only admits v* tags, so a manual run from a branch stops here.
+    environment:
+      name: npm
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          # Trusted publishing needs npm 11.5.1 and staging needs 11.15.0. Node 22 ships npm 10.
+          node-version: 24
+          package-manager-cache: false
+
+      # The trusted publisher allows staging only, so the version goes live when a maintainer
+      # approves it on npmjs.com. --provenance turns a missing attestation into a failed run.
+      - name: Stage on npm
+        run: npm stage publish --provenance --access public
+
+  release:
+    name: GitHub Release
+    needs: [validate, publish]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          NOTES: ${{ needs.validate.outputs.notes }}
+        run: gh release create "$GITHUB_REF_NAME" --verify-tag --title "$GITHUB_REF_NAME" --notes "$NOTES"
