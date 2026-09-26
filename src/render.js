@@ -58,13 +58,22 @@ export function renderNoRecords(meta, { columns } = {}) {
   const types = [...meta.recordTypes].sort(([, a], [, b]) => b - a)
     .map(([type, count]) => `${type === undefined ? '(none)' : clean(type)} ${int(count)}`);
   const versions = meta.cliVersions.map(clean);
+  const files = meta.filesInspected;
+  const uncounted = meta.filesWithUncountedUsage;
+  const which = uncounted === files
+    ? plural(files, 'It logs', 'They log')
+    : `${int(uncounted)} of them ${plural(uncounted, 'logs', 'log')}`;
   const lines = [
-    `found ${int(meta.filesInspected)} Codex session ${plural(meta.filesInspected, 'file', 'files')} `
-      + `but no token usage records in ${plural(meta.filesInspected, 'it', 'them')}. `
-      + 'Codex may have changed its log format.',
+    `found ${int(files)} Codex session ${plural(files, 'file', 'files')} `
+      + `but no token usage records in ${plural(files, 'it', 'them')}. `
+      + (uncounted > 0
+        ? `${which} token usage only as running totals, as Codex 0.152 and earlier did, and this tool cannot count that.`
+        : 'Codex may have changed its log format.'),
     `record types seen: ${types.join(', ') || 'none'}`,
     `Codex versions: ${versions.join(', ') || 'unknown'}`,
-    `Please open an issue at ${ISSUES_URL} and paste these lines.`,
+    uncounted > 0
+      ? `If these logs come from Codex 0.153 or newer, please open an issue at ${ISSUES_URL} and paste these lines.`
+      : `Please open an issue at ${ISSUES_URL} and paste these lines.`,
   ];
   const lost = lostDataWarning(meta, 'so some usage may have been missed');
   if (lost) lines.push('', lost);
@@ -635,6 +644,13 @@ function warningLines({ meta, pricing }, days, escape = clean) {
 
   const lost = lostDataWarning(meta);
   if (lost) warnings.push(lost);
+
+  if (meta.filesWithUncountedUsage > 0) {
+    const count = meta.filesWithUncountedUsage;
+    warnings.push(`warning: ${int(count)} ${plural(count, 'file logs', 'files log')} token usage only as running `
+      + 'totals, as Codex 0.152 and earlier did. This tool cannot count that usage, so the totals leave it out. '
+      + 'In a thread resumed after upgrading Codex, the missing part is the turns from before the upgrade.');
+  }
 
   const mismatched = meta.reconciliation.filter((entry) => !entry.ok);
   if (mismatched.length) {

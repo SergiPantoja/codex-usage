@@ -54,6 +54,12 @@ does not when output is piped, under `--json`, in CI, over SSH, or on Linux with
 This is not your bill. Codex is a subscription. This number is what the same tokens would have
 cost through the API, which is a different thing.
 
+It does not count usage from Codex 0.152 and earlier. Those versions log token usage only as a
+running total per thread. This tool counts the per-request usage records that Codex writes from
+0.153.0 on, which OpenAI released on 2026-09-03. A thread started on an older version and
+resumed on a newer one counts from the upgrade on. When the logs hold usage the tool cannot
+count, the report prints a warning with the number of files.
+
 It never reads or transmits anything you typed. It skips conversation content and reads only
 token counters. It never modifies anything under `~/.codex`.
 
@@ -101,6 +107,12 @@ Unknown models still count. A model with no published price keeps its token coun
 Context compaction counts too. Codex periodically re-reads a conversation to summarise it,
 which is a real request costing real money, so it appears in the totals. The line under the
 total shows how much of it was compaction.
+
+Compaction is why this report can show more tokens than ccusage or the Codex `/status` total.
+Both read Codex's running total, which leaves out remote compaction, a Codex bug reported as
+[openai/codex#47003](https://github.com/openai/codex/issues/47003). On the logs account
+checked, the difference was exactly the compaction line. On logs from Codex 0.152 and earlier
+it goes the other way, since ccusage counts those and this tool does not.
 
 Cached input is already included in the input figure. Total is input plus output.
 
