@@ -1,6 +1,6 @@
 {
   "name": "codex-usage-report",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Token usage and API-equivalent cost from your local Codex session logs",
   "license": "MIT",
   "repository": {
