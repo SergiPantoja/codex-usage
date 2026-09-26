@@ -110,8 +110,8 @@ total shows how much of it was compaction.
 
 Compaction is why this report can show more tokens than ccusage or the Codex `/status` total.
 Both read Codex's running total, which leaves out remote compaction, a Codex bug reported as
-[openai/codex#47003](https://github.com/openai/codex/issues/47003). On the logs account
-checked, the difference was exactly the compaction line. On logs from Codex 0.152 and earlier
+[openai/codex#47003](https://github.com/openai/codex/issues/47003). On the logs checked,
+the difference was exactly the compaction line. On logs from Codex 0.152 and earlier
 it goes the other way, since ccusage counts those and this tool does not.
 
 Cached input is already included in the input figure. Total is input plus output.
@@ -132,8 +132,18 @@ One question worth answering if you have a Pro or Business account: is
 which means long-context pricing at 2x input and 1.5x output can never trigger. If a higher
 plan lifts that cap, the estimate changes a lot for anyone who raises it.
 
-There is a probe script that prints only schema shape. No paths, no names, no conversation
-content, safe to paste into an issue.
+[`scripts/probe.js`](scripts/probe.js) prints the shape of your Codex logs, for pasting into an
+issue. It prints Codex versions, client and model names, reasoning efforts, plan and rate-limit
+settings, and counts of files and requests. It prints no paths, no thread or agent names, and
+nothing from a conversation. Run it from any folder:
+
+```bash
+curl -fsSLO https://raw.githubusercontent.com/SergiPantoja/codex-usage/main/scripts/probe.js
+node probe.js
+```
+
+In Windows PowerShell, type `curl.exe` instead of `curl`. In a clone of this repository, run
+`node scripts/probe.js`.
 
 ## License
 
