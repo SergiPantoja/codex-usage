@@ -4,6 +4,20 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-26
+
+### Added
+
+- A warning when log files hold token usage that Codex 0.152 and earlier logged only as
+  running totals, which this tool cannot count. It gives the number of files, and it covers
+  threads started on an older Codex and resumed on a newer one. `--json` has the count as
+  `meta.filesWithUncountedUsage`.
+
+### Changed
+
+- When no log file has a usage record and some hold usage from Codex 0.152 or earlier, the
+  message says so instead of suggesting that Codex changed its log format.
+
 ## [0.1.0] - 2026-09-25
 
 ### Added
@@ -23,5 +37,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   warnings when files cannot be read, when the logs do not match the expected format, or
   when a model has no published price.
 
-[Unreleased]: https://github.com/SergiPantoja/codex-usage/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/SergiPantoja/codex-usage/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/SergiPantoja/codex-usage/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/SergiPantoja/codex-usage/releases/tag/v0.1.0

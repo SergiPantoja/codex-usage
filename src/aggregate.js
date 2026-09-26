@@ -42,7 +42,7 @@ export async function aggregate(files, options = {}) {
   const meta = {
     timeZone, today, generatedAt: now.toISOString(), filesInspected: files.length,
     usageRecordsRead: 0, recordsCounted: 0, duplicatesSkipped: 0,
-    unattributedRecords: 0, undatedRecords: 0, cacheWriteRecords: 0,
+    unattributedRecords: 0, undatedRecords: 0, cacheWriteRecords: 0, filesWithUncountedUsage: 0,
     missingUsageFields: Object.fromEntries(COST_FIELDS.map((field) => [field, 0])),
     reconciliation: [], rateLimits: new Map(), recordTypes: new Map(),
   };
@@ -56,6 +56,7 @@ export async function aggregate(files, options = {}) {
   for (const file of files) {
     const thread = await readThread(file, counts, meta, found);
     if (thread.entries.length) meta.reconciliation.push(reconcile(file, thread.entries));
+    if (thread.uncountedUsage) meta.filesWithUncountedUsage++;
 
     for (const entry of thread.entries) {
       meta.usageRecordsRead++;
@@ -100,7 +101,9 @@ export async function aggregate(files, options = {}) {
 }
 
 async function readThread(file, counts, meta, found) {
-  const thread = { entries: [], turnModels: new Map(), firstModel: undefined, compactionIds: new Set() };
+  const thread = {
+    entries: [], turnModels: new Map(), firstModel: undefined, compactionIds: new Set(), uncountedUsage: false,
+  };
   let latestModel;
 
   for await (const record of readRecords(file, counts)) {
@@ -134,8 +137,14 @@ async function readThread(file, counts, meta, found) {
       found.sources.add(sourceShape(payload.source));
     } else if (record.type === 'event_msg' && payload.type === 'thread_settings_applied') {
       found.serviceTiers.add(payload.thread_settings?.service_tier);
-    } else if (record.type === 'event_msg' && payload.type === 'token_count' && payload.rate_limits) {
-      keepLatestRateLimits(meta.rateLimits, payload.rate_limits, record.timestamp);
+    } else if (record.type === 'event_msg' && payload.type === 'token_count') {
+      // Codex 0.152 and earlier log usage only in token_count, which this tool does not count.
+      // Current Codex writes a request's usage record before the token_count that follows it, so
+      // a token_count before the first record whose last_token_usage holds a request's input is
+      // usage no record covers. Snapshots that add no request, after a context overflow, a
+      // compaction or a fork, keep earlier totals but no input in last_token_usage.
+      if (!thread.entries.length && payload.info?.last_token_usage?.input_tokens > 0) thread.uncountedUsage = true;
+      if (payload.rate_limits) keepLatestRateLimits(meta.rateLimits, payload.rate_limits, record.timestamp);
     }
   }
   return thread;

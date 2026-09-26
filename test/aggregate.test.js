@@ -21,9 +21,11 @@ const RENAMED_FIELD = `${fixtures}rollout-2026-09-20T07-59-00-renamed-field.json
 const ATTRIBUTION = `${fixtures}rollout-2026-09-20T09-00-00-attribution.jsonl`;
 // Fields missing from otherwise ordinary records: u1 has no timestamp, u2 an unreadable one, the
 // next two no response_id, u5 no usage object, u6 a string for input_tokens, one event_msg no
-// payload, one token_count no rate_limits and one whose rate_limits is null. u1 to u4 carry
-// 1,000, 2,000, 4,000 and 8,000 input. Read per test, so that a record that throws fails the
-// tests that read it rather than the whole file.
+// payload, one token_count no rate_limits and one whose rate_limits is null, a token_count
+// before the first record whose info has no last_token_usage, a session_meta whose source is
+// null and a thread_settings_applied with no thread_settings. u1 to u4 carry 1,000, 2,000,
+// 4,000 and 8,000 input. Read per test, so that a record that throws fails the tests that read
+// it rather than the whole file.
 const SPARSE = `${fixtures}rollout-2026-09-20T10-00-00-sparse.jsonl`;
 // One usage record, whose thread_token_usage disagrees with it on cached input only.
 const SINGLE = `${fixtures}rollout-2026-09-20T11-00-00-single.jsonl`;
@@ -39,6 +41,19 @@ const RATE_LIMITS = `${fixtures}rollout-2026-09-20T12-00-00-rate-limits.jsonl`;
 // RATE_LIMITS.
 const NULL_LIMIT_ID = `${fixtures}rollout-2026-09-20T13-00-00-null-limit-id.jsonl`;
 const EMPTY_LIMIT_ID = `${fixtures}rollout-2026-09-20T13-30-00-empty-limit-id.jsonl`;
+// Codex 0.147.0 writes no token_usage_record, only token_count running totals. The first
+// token_count carries rate limits and no usage, the next two 100,000 and then 300,000 input.
+const OLDER = `${fixtures}rollout-2026-07-01T10-00-00-older.jsonl`;
+// Started on Codex 0.152.0 with a first request of 100,000 input, none of it cached, and a
+// compacted record with no id, then resumed on 0.155, which adds two usage records of 1,000 and
+// 2,000 input. Their thread_token_usage starts from 0, so the file reconciles without the
+// earlier usage. The first token_count with usage carries a premium rate-limit snapshot at 7%,
+// the last one a codex snapshot at 12%.
+const RESUMED = `${fixtures}rollout-2026-07-02T10-00-00-resumed.jsonl`;
+// Current format, with two token_count snapshots that add no request before the first usage
+// record. The first carries 50,000 input of totals from a parent thread. The second follows a
+// first request that overflowed the context window, and sets only total_tokens.
+const SNAPSHOTS_FIRST = `${fixtures}rollout-2026-09-20T14-00-00-snapshots-first.jsonl`;
 
 // Noon on 2026-09-20 in New York, which is UTC-4 in September.
 const OPTIONS = { timeZone: 'America/New_York', now: new Date('2026-09-20T16:00:00Z'), days: 7 };
@@ -231,6 +246,32 @@ test('does not count a field that is present with the value 0', () => {
   assert.deepEqual(report.meta.missingUsageFields, {
     input_tokens: 0, cached_input_tokens: 0, cache_write_input_tokens: 0, output_tokens: 0,
   });
+});
+
+test('flags each file with usage only in token_count once, and adds none of that usage', async () => {
+  // OLDER has two token_count events with usage and RESUMED one. Only the usage records of
+  // RESUMED and SNAPSHOTS_FIRST count, 3,000 and 4,000 input.
+  const { periods, meta } = await aggregate([OLDER, RESUMED, SNAPSHOTS_FIRST], UTC_OPTIONS);
+  assert.equal(meta.filesWithUncountedUsage, 2);
+  assert.equal(sumTable(periods.allTime.models).inputTokens, 7000);
+});
+
+test('flags a thread resumed after upgrading Codex, and still counts and reconciles its usage records', async () => {
+  const { periods, meta } = await aggregate([RESUMED], UTC_OPTIONS);
+  assert.equal(meta.filesWithUncountedUsage, 1);
+  assert.equal(sumTable(periods.allTime.models).inputTokens, 3000);
+  assert.deepEqual(meta.reconciliation.map(({ file, ok }) => [file, ok]), [['rollout-2026-07-02T10-00-00-resumed.jsonl', true]]);
+});
+
+test('reads rate limits from a flagged file, from before and after the upgrade', async () => {
+  const { meta } = await aggregate([RESUMED], UTC_OPTIONS);
+  assert.equal(meta.rateLimits.get('premium').primary.used_percent, 7);
+  assert.equal(meta.rateLimits.get('codex').primary.used_percent, 12);
+});
+
+test('does not flag a token_count after a usage record, with no usage, or that adds no request', async () => {
+  const { meta } = await aggregate([SNAPSHOTS_FIRST, THREAD_A, THREAD_B, RATE_LIMITS], UTC_OPTIONS);
+  assert.equal(meta.filesWithUncountedUsage, 0);
 });
 
 test('records the latest rate-limit snapshot per limit_id by timestamp', async () => {

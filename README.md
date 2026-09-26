@@ -54,6 +54,12 @@ does not when output is piped, under `--json`, in CI, over SSH, or on Linux with
 This is not your bill. Codex is a subscription. This number is what the same tokens would have
 cost through the API, which is a different thing.
 
+It does not count usage from Codex 0.152 and earlier. Those versions log token usage only as a
+running total per thread. This tool counts the per-request usage records that Codex writes from
+0.153.0 on, which OpenAI released on 2026-09-03. A thread started on an older version and
+resumed on a newer one counts from the upgrade on. When the logs hold usage the tool cannot
+count, the report prints a warning with the number of files.
+
 It never reads or transmits anything you typed. It skips conversation content and reads only
 token counters. It never modifies anything under `~/.codex`.
 
@@ -102,6 +108,12 @@ Context compaction counts too. Codex periodically re-reads a conversation to sum
 which is a real request costing real money, so it appears in the totals. The line under the
 total shows how much of it was compaction.
 
+Compaction is why this report can show more tokens than ccusage or the Codex `/status` total.
+Both read Codex's running total, which leaves out remote compaction, a Codex bug reported as
+[openai/codex#47003](https://github.com/openai/codex/issues/47003). On the logs checked,
+the difference was exactly the compaction line. On logs from Codex 0.152 and earlier
+it goes the other way, since ccusage counts those and this tool does not.
+
 Cached input is already included in the input figure. Total is input plus output.
 
 ## Alternatives
@@ -120,8 +132,18 @@ One question worth answering if you have a Pro or Business account: is
 which means long-context pricing at 2x input and 1.5x output can never trigger. If a higher
 plan lifts that cap, the estimate changes a lot for anyone who raises it.
 
-There is a probe script that prints only schema shape. No paths, no names, no conversation
-content, safe to paste into an issue.
+[`scripts/probe.js`](scripts/probe.js) prints the shape of your Codex logs, for pasting into an
+issue. It prints Codex versions, client and model names, reasoning efforts, plan and rate-limit
+settings, and counts of files and requests. It prints no paths, no thread or agent names, and
+nothing from a conversation. Run it from any folder:
+
+```bash
+curl -fsSLO https://raw.githubusercontent.com/SergiPantoja/codex-usage/main/scripts/probe.js
+node probe.js
+```
+
+In Windows PowerShell, type `curl.exe` instead of `curl`. In a clone of this repository, run
+`node scripts/probe.js`.
 
 ## License
 
