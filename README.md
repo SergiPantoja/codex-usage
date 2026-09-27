@@ -127,11 +127,6 @@ report, one image you can paste into a thread.
 The most useful thing you can send is data about plans other than Plus. Everything here was
 verified against a single Plus account.
 
-One question worth answering if you have a Pro or Business account: is
-`model_context_window` ever above 272,000? On Plus it is capped at 258,400 for every model,
-which means long-context pricing at 2x input and 1.5x output can never trigger. If a higher
-plan lifts that cap, the estimate changes a lot for anyone who raises it.
-
 [`scripts/probe.js`](scripts/probe.js) prints the shape of your Codex logs, for pasting into an
 issue. It prints Codex versions, client and model names, reasoning efforts, plan and rate-limit
 settings, and counts of files and requests. It prints no paths, no thread or agent names, and
