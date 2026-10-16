@@ -75,7 +75,7 @@ Prices come from the LiteLLM public price table, fetched 2026-09-24 02:45.
 ## Accuracy
 
 - This is not a bill. Codex is a subscription, and these are the costs of the same tokens through the API.
-- Fast mode is not visible in the logs ([openai/codex#30413](https://github.com/openai/codex/issues/30413)). Requests made in Fast mode cost 2x these rates.
+- Fast and Ultrafast are not visible in the logs ([openai/codex#30413](https://github.com/openai/codex/issues/30413)). Requests made in Fast mode cost 2x these rates, and in Ultrafast 6x.
 - Cached input is priced at the cached rate, which assumes the API would have cached the same requests. OpenAI documents no difference in caching between subscription and API use.
 - Cached input is part of input, and reasoning is part of output.
 

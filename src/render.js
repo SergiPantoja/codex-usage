@@ -3,7 +3,14 @@ const README_NETWORK_URL = 'https://github.com/SergiPantoja/codex-usage#what-thi
 const UNKNOWN_MODEL = '<unknown>';
 const FALLBACK_COLUMNS = 80;
 const GAP = '   ';
-const FAST_BUG = 'Fast mode is not logged (openai/codex#30413). It costs 2x the rates used here.';
+const FAST_BUG = 'Fast and Ultrafast are not logged (openai/codex#30413). They cost 2x and 6x the rates used here.';
+// What each service tier Codex can record in a thread's settings costs, against standard rates.
+const TIER_RATES = new Map([
+  ['priority', { name: 'Fast mode', factor: 2 }],
+  ['fast', { name: 'Fast mode', factor: 2 }],
+  ['ultrafast', { name: 'Ultrafast', factor: 6 }],
+  ['flex', { name: 'Flex', factor: 0.5 }],
+]);
 
 // Model slugs, plan types, limit ids, versions and record types come from log files, so a
 // crafted log could otherwise write terminal escape sequences.
@@ -128,8 +135,8 @@ export function renderMarkdown(priced) {
     '## Accuracy',
     [
       '- This is not a bill. Codex is a subscription, and these are the costs of the same tokens through the API.',
-      '- Fast mode is not visible in the logs ([openai/codex#30413](https://github.com/openai/codex/issues/30413)). '
-        + 'Requests made in Fast mode cost 2x these rates.',
+      '- Fast and Ultrafast are not visible in the logs ([openai/codex#30413](https://github.com/openai/codex/issues/30413)). '
+        + 'Requests made in Fast mode cost 2x these rates, and in Ultrafast 6x.',
       '- Cached input is priced at the cached rate, which assumes the API would have cached the same requests. '
         + 'OpenAI documents no difference in caching between subscription and API use.',
       '- Cached input is part of input, and reasoning is part of output.',
@@ -636,11 +643,7 @@ function validationLine(meta) {
 function warningLines({ meta, pricing }, days, escape = clean) {
   const warnings = [];
   const tiers = meta.serviceTiers.filter((tier) => tier !== 'default');
-  if (tiers.length) {
-    warnings.push(`WARNING: the logs show service tier ${listed(tiers.map((tier) => `"${escape(tier)}"`))}. `
-      + 'This report prices every request at standard rates. Fast mode costs 2x, so the real cost '
-      + 'can be about double this estimate.');
-  }
+  if (tiers.length) warnings.push(tierWarning(tiers, escape));
 
   const lost = lostDataWarning(meta);
   if (lost) warnings.push(lost);
@@ -712,6 +715,26 @@ function warningLines({ meta, pricing }, days, escape = clean) {
       + `If the cost looks wrong, please open an issue at ${ISSUES_URL}`);
   }
   return warnings;
+}
+
+// The logs hold the tier a thread asked for, not the one each request got, so the report keeps
+// standard rates and says how far off they can be.
+function tierWarning(tiers, escape) {
+  const known = [...new Map(tiers.filter((tier) => TIER_RATES.has(tier))
+    .map((tier) => [TIER_RATES.get(tier).name, TIER_RATES.get(tier)])).values()];
+  const unknown = tiers.filter((tier) => !TIER_RATES.has(tier));
+  const sentences = [`WARNING: the logs show service tier ${listed(tiers.map((tier) => `"${escape(tier)}"`))}. `
+    + 'This report prices every request at standard rates.'];
+  if (known.length) {
+    const costs = listed(known.map(({ name, factor }) => `${name} costs ${factor < 1 ? 'half as much' : `${factor}x`}`));
+    const top = Math.max(...known.map(({ factor }) => factor));
+    const effect = top > 1 ? `can be up to ${top === 2 ? 'double' : `${top} times`} this estimate` : 'can be lower than this estimate';
+    sentences.push(`${capitalised(costs)}, so the real cost ${effect}.`);
+  }
+  if (unknown.length) {
+    sentences.push(`This tool does not know the rate for ${listed(unknown.map((tier) => `"${escape(tier)}"`))}.`);
+  }
+  return sentences.join(' ');
 }
 
 // The Markdown and the SVG give the terminal's warnings as sentences.
