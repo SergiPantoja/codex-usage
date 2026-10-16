@@ -33,7 +33,8 @@ codex plan: plus · 5h window 65% used · weekly window 59% used
 
 prices from LiteLLM, fetched 2026-09-24 02:45
 checked 111 files · 3,713 requests · 0 duplicates · all 111 files reconcile
-Fast mode is not logged (openai/codex#30413). It costs 2x the rates used here.
+Fast and Ultrafast are not logged (openai/codex#30413). They cost 2x and 6x the
+  rates used here.
 
 wrote codex-usage.md and codex-usage.svg
 ```
@@ -91,15 +92,19 @@ If the request fails for any reason, the report says so and names the prices it 
 
 ## Accuracy
 
-Fast mode is missing from the report. Codex requests the priority tier but the response comes
-back recorded as `service_tier=default`, which is
+Fast and Ultrafast are missing from the report. Codex logs the speed a thread asked for, but
+not the speed each request ran at. Codex requests the priority tier for Fast, and the response
+comes back recorded as `service_tier=default`, which is
 [openai/codex#30413](https://github.com/openai/codex/issues/30413). Fast costs 2x standard
-rates for every token type, so if you use it, your real API-equivalent cost is roughly double
-what this shows. Every usage tracker reading these logs has the same problem.
+rates for every token type and Ultrafast 6x, so if you use either, your real API-equivalent
+cost is that much higher than this shows. When a thread asked for Fast, Ultrafast or Flex, the
+report warns and says how far off standard rates can be. Every usage tracker reading these logs
+has the same problem.
 
-Prices come from the LiteLLM public catalog, which mirrors OpenAI's published pricing page.
-CI checks the two against each other daily. The report always names which price table it used
-and when it was fetched.
+Prices come from the LiteLLM public catalog, which mirrors OpenAI's published pricing page. A
+daily workflow in this repository updates the table bundled with the package when LiteLLM's
+prices change, and the next release ships it. The report always names which price table it
+used and when it was fetched.
 
 Unknown models still count. A model with no published price keeps its token counts and shows
 `N/A` for cost instead of being dropped.

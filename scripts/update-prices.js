@@ -31,14 +31,16 @@ console.log(`wrote src/prices.json: ${Object.keys(models).length} models from ${
 for (const change of changes) console.log(`  ${change}`);
 
 async function latestCommit() {
-  const commits = await getJson(`https://api.github.com/repos/${REPO}/commits?path=${FILE}&per_page=1`);
+  // Runners share addresses, so the workflow passes its token to stay clear of the anonymous rate limit.
+  const auth = process.env.GITHUB_TOKEN ? { authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {};
+  const commits = await getJson(`https://api.github.com/repos/${REPO}/commits?path=${FILE}&per_page=1`, auth);
   const sha = commits?.[0]?.sha;
   if (!/^[0-9a-f]{40}$/.test(sha ?? '')) throw new Error(`no commit found for ${FILE}`);
   return sha;
 }
 
-async function getJson(url) {
-  const response = await fetch(url, { signal: AbortSignal.timeout(30_000) });
+async function getJson(url, headers = {}) {
+  const response = await fetch(url, { headers, signal: AbortSignal.timeout(30_000) });
   if (!response.ok) throw new Error(`${url} answered HTTP ${response.status}`);
   return response.json();
 }

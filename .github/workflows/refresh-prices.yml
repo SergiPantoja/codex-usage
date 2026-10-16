@@ -1,0 +1,114 @@
+name: Refresh prices
+
+on:
+  # Off the hour, since GitHub delays and can drop scheduled runs at the start of each hour.
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: refresh-prices
+
+jobs:
+  refresh:
+    name: Refresh the bundled price table
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Opening the pull request also needs "Allow GitHub Actions to create and approve pull
+    # requests" turned on in the repository's Actions settings.
+    permissions:
+      contents: write
+      pull-requests: write
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      # update-prices.js exits 1 when a download fails, which is worth retrying, and 2 when the
+      # data fails validation, which is not. It rewrites src/prices.json only when a price changed.
+      - name: Fetch the LiteLLM table
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          for attempt in 1 2 3; do
+            status=0
+            node scripts/update-prices.js | tee "$RUNNER_TEMP/changes.txt" || status=$?
+            if [ "$status" -ne 1 ] || [ "$attempt" -eq 3 ]; then break; fi
+            sleep $((attempt * 60))
+          done
+          exit "$status"
+
+      - name: Look for a change
+        id: change
+        run: |
+          if git diff --quiet -- src/prices.json; then
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
+          else
+            echo 'changed=true' >> "$GITHUB_OUTPUT"
+          fi
+
+      # CI does not start by itself on a pull request this workflow opens, so the checks run here.
+      - name: Test the new table
+        if: steps.change.outputs.changed == 'true'
+        run: |
+          node --test
+          home="$RUNNER_TEMP/codex-home"
+          out="$RUNNER_TEMP/out"
+          mkdir -p "$home/sessions/2026/09/16" "$out"
+          cp test/fixtures/rollout-2026-09-16T10-00-00-thread-a.jsonl "$home/sessions/2026/09/16/"
+          cd "$out"
+          CODEX_HOME="$home" node "$GITHUB_WORKSPACE/bin/codex-usage-report.js" --offline > report.txt
+          cat report.txt
+          grep -q 'the file reconciles' report.txt
+          test -s codex-usage.md
+          test -s codex-usage.svg
+
+      - name: Open and merge the pull request
+        if: steps.change.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          commit=$(node -p "require('./src/prices.json').litellmCommit.slice(0, 8)")
+          title="chore(prices): the bundled table matches LiteLLM $commit"
+          body="$RUNNER_TEMP/body.md"
+          {
+            echo 'scripts/update-prices.js found a price change in the LiteLLM table:'
+            echo
+            echo '```'
+            cat "$RUNNER_TEMP/changes.txt"
+            echo '```'
+            echo
+            echo "node --test and an offline run against the test fixture passed in $RUN_URL."
+            echo 'The workflow merges this itself. npm gets the table with the next release.'
+          } > "$body"
+
+          branch=bot/refresh-prices
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git switch -c "$branch"
+          git commit --quiet -m "$title" -- src/prices.json
+          git push --force origin "$branch"
+
+          # A pull request left open by a failed merge is reused, not duplicated.
+          if [ "$(gh pr view "$branch" --json state --jq .state 2>/dev/null)" != OPEN ]; then
+            gh pr create --base main --head "$branch" --title "$title" --body-file "$body"
+          fi
+          # GitHub can need a few seconds to work out that a new pull request is mergeable.
+          for attempt in 1 2 3; do
+            if gh pr merge "$branch" --squash --subject "$title" --body-file "$body" \
+              --match-head-commit "$(git rev-parse HEAD)"; then
+              break
+            fi
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            sleep 15
+          done
+          # A repository that deletes merged branches itself has already removed it.
+          git push origin --delete "$branch" || echo "$branch was already deleted"

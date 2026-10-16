@@ -168,5 +168,5 @@ gpt-5.6-sol $3.50</title>
 <text x="40" y="864" font-size="12" fill="#52514e">Generated 2026-09-24 02:45 (America/New_York) by codex-usage-report</text>
 <text x="40" y="882" font-size="12" fill="#52514e">Prices from LiteLLM, fetched 2026-09-24 02:45</text>
 <text x="40" y="900" font-size="12" fill="#52514e">Checked 111 files · 3,713 requests · 0 duplicates · all 111 files reconcile</text>
-<text x="40" y="918" font-size="12" fill="#52514e">Fast mode is not logged (openai/codex#30413). It costs 2x the rates used here.</text>
+<text x="40" y="918" font-size="12" fill="#52514e">Fast and Ultrafast are not logged (openai/codex#30413). They cost 2x and 6x the rates used here.</text>
 </svg>

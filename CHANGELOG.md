@@ -9,6 +9,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - The bundled price table, used with `--offline` or when the download fails, now comes from
   LiteLLM as of 2026-10-16. It adds `gpt-6.1-sol`, the default Codex model since 2026-09-29,
   which the previous table priced as N/A. No existing model's rates changed.
+- The caveat under every report names Ultrafast, which costs 6x standard rates, next to Fast at
+  2x. Neither is in the logs.
+- The warning for a thread that asked for a service tier other than standard now gives that
+  tier's rate: 2x for Fast (`priority`), 6x for Ultrafast and half for Flex. It names a tier it
+  does not know instead of calling it Fast mode.
 
 ## [0.2.0] - 2026-09-26
 
