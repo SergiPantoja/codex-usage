@@ -101,9 +101,10 @@ cost is that much higher than this shows. When a thread asked for Fast, Ultrafas
 report warns and says how far off standard rates can be. Every usage tracker reading these logs
 has the same problem.
 
-Prices come from the LiteLLM public catalog, which mirrors OpenAI's published pricing page.
-CI checks the two against each other daily. The report always names which price table it used
-and when it was fetched.
+Prices come from the LiteLLM public catalog, which mirrors OpenAI's published pricing page. A
+daily workflow in this repository updates the table bundled with the package when LiteLLM's
+prices change, and the next release ships it. The report always names which price table it
+used and when it was fetched.
 
 Unknown models still count. A model with no published price keeps its token counts and shows
 `N/A` for cost instead of being dropped.
