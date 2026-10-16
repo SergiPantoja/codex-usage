@@ -1,8 +1,8 @@
 {
-  "sourceUrl": "https://raw.githubusercontent.com/BerriAI/litellm/721d39f476428a0e8f5991fef94669e53bd20df1/model_prices_and_context_window.json",
-  "litellmCommit": "721d39f476428a0e8f5991fef94669e53bd20df1",
-  "capturedAt": "2026-09-23T08:03:39.925Z",
-  "sourceEntries": 4183,
+  "sourceUrl": "https://raw.githubusercontent.com/BerriAI/litellm/e74e4e569331c1d99757ae6118685d8826c6f7c6/model_prices_and_context_window.json",
+  "litellmCommit": "e74e4e569331c1d99757ae6118685d8826c6f7c6",
+  "capturedAt": "2026-10-16T10:40:07.449Z",
+  "sourceEntries": 4190,
   "models": {
     "chat-latest": {
       "short": {
@@ -14,6 +14,15 @@
       "long": null
     },
     "computer-use-preview": {
+      "short": {
+        "input": 0.000003,
+        "cachedInput": null,
+        "cacheWrite": null,
+        "output": 0.000012
+      },
+      "long": null
+    },
+    "computer-use-preview-2025-03-11": {
       "short": {
         "input": 0.000003,
         "cachedInput": null,
@@ -383,7 +392,25 @@
       },
       "long": null
     },
+    "gpt-4o-mini-search-preview-2025-03-11": {
+      "short": {
+        "input": 1.5e-7,
+        "cachedInput": 7.5e-8,
+        "cacheWrite": null,
+        "output": 6e-7
+      },
+      "long": null
+    },
     "gpt-4o-search-preview": {
+      "short": {
+        "input": 0.0000025,
+        "cachedInput": 0.00000125,
+        "cacheWrite": null,
+        "output": 0.00001
+      },
+      "long": null
+    },
+    "gpt-4o-search-preview-2025-03-11": {
       "short": {
         "input": 0.0000025,
         "cachedInput": 0.00000125,
@@ -411,6 +438,15 @@
       "long": null
     },
     "gpt-5-chat": {
+      "short": {
+        "input": 0.00000125,
+        "cachedInput": 1.25e-7,
+        "cacheWrite": null,
+        "output": 0.00001
+      },
+      "long": null
+    },
+    "gpt-5-chat-latest": {
       "short": {
         "input": 0.00000125,
         "cachedInput": 1.25e-7,
@@ -491,6 +527,15 @@
       },
       "long": null
     },
+    "gpt-5.1-chat-latest": {
+      "short": {
+        "input": 0.00000125,
+        "cachedInput": 1.25e-7,
+        "cacheWrite": null,
+        "output": 0.00001
+      },
+      "long": null
+    },
     "gpt-5.2": {
       "short": {
         "input": 0.00000175,
@@ -501,6 +546,24 @@
       "long": null
     },
     "gpt-5.2-2025-12-11": {
+      "short": {
+        "input": 0.00000175,
+        "cachedInput": 1.75e-7,
+        "cacheWrite": null,
+        "output": 0.000014
+      },
+      "long": null
+    },
+    "gpt-5.2-chat-latest": {
+      "short": {
+        "input": 0.00000175,
+        "cachedInput": 1.75e-7,
+        "cacheWrite": null,
+        "output": 0.000014
+      },
+      "long": null
+    },
+    "gpt-5.3-chat-latest": {
       "short": {
         "input": 0.00000175,
         "cachedInput": 1.75e-7,
@@ -602,6 +665,15 @@
       }
     },
     "gpt-5.5-cyber": {
+      "short": {
+        "input": 0.0000125,
+        "cachedInput": 0.00000125,
+        "cacheWrite": null,
+        "output": 0.000075
+      },
+      "long": null
+    },
+    "gpt-5.5-cyber-preview": {
       "short": {
         "input": 0.0000125,
         "cachedInput": 0.00000125,
@@ -722,6 +794,20 @@
         "output": 0.000015
       }
     },
+    "gpt-6.1-sol": {
+      "short": {
+        "input": 0.000002,
+        "cachedInput": 1e-7,
+        "cacheWrite": 0.0000025,
+        "output": 0.00001
+      },
+      "long": {
+        "input": 0.000004,
+        "cachedInput": 2e-7,
+        "cacheWrite": 0.000005,
+        "output": 0.000015
+      }
+    },
     "gpt-audio": {
       "short": {
         "input": 0.0000025,
@@ -758,12 +844,30 @@
       },
       "long": null
     },
+    "gpt-audio-mini-2025-10-06": {
+      "short": {
+        "input": 6e-7,
+        "cachedInput": null,
+        "cacheWrite": null,
+        "output": 0.0000024
+      },
+      "long": null
+    },
     "gpt-audio-mini-2025-12-15": {
       "short": {
         "input": 6e-7,
         "cachedInput": null,
         "cacheWrite": null,
         "output": 0.0000024
+      },
+      "long": null
+    },
+    "gpt-rosalind-discovery": {
+      "short": {
+        "input": 0.000005,
+        "cachedInput": 5e-7,
+        "cacheWrite": null,
+        "output": 0.000025
       },
       "long": null
     },
