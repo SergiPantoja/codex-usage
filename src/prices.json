@@ -1,8 +1,8 @@
 {
-  "sourceUrl": "https://raw.githubusercontent.com/BerriAI/litellm/e74e4e569331c1d99757ae6118685d8826c6f7c6/model_prices_and_context_window.json",
-  "litellmCommit": "e74e4e569331c1d99757ae6118685d8826c6f7c6",
-  "capturedAt": "2026-10-16T10:40:07.449Z",
-  "sourceEntries": 4190,
+  "sourceUrl": "https://raw.githubusercontent.com/BerriAI/litellm/c905cd065dfcc64440420e26fa9a085bdc991ba1/model_prices_and_context_window.json",
+  "litellmCommit": "c905cd065dfcc64440420e26fa9a085bdc991ba1",
+  "capturedAt": "2026-10-27T06:44:10.891Z",
+  "sourceEntries": 4324,
   "models": {
     "chat-latest": {
       "short": {
@@ -806,6 +806,20 @@
         "cachedInput": 2e-7,
         "cacheWrite": 0.000005,
         "output": 0.000015
+      }
+    },
+    "gpt-6.1-terra": {
+      "short": {
+        "input": 0.000001,
+        "cachedInput": 5e-8,
+        "cacheWrite": 0.00000125,
+        "output": 0.000005
+      },
+      "long": {
+        "input": 0.000002,
+        "cachedInput": 1e-7,
+        "cacheWrite": 0.0000025,
+        "output": 0.0000075
       }
     },
     "gpt-audio": {
