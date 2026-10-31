@@ -1,8 +1,8 @@
 {
-  "sourceUrl": "https://raw.githubusercontent.com/BerriAI/litellm/c905cd065dfcc64440420e26fa9a085bdc991ba1/model_prices_and_context_window.json",
-  "litellmCommit": "c905cd065dfcc64440420e26fa9a085bdc991ba1",
-  "capturedAt": "2026-10-27T06:44:10.891Z",
-  "sourceEntries": 4324,
+  "sourceUrl": "https://raw.githubusercontent.com/BerriAI/litellm/a392a39627f51bf0369944556c22268ee8cffe83/model_prices_and_context_window.json",
+  "litellmCommit": "a392a39627f51bf0369944556c22268ee8cffe83",
+  "capturedAt": "2026-10-31T06:25:35.805Z",
+  "sourceEntries": 4547,
   "models": {
     "chat-latest": {
       "short": {
@@ -778,6 +778,20 @@
         "cachedInput": 2e-8,
         "cacheWrite": 2.5e-7,
         "output": 7.5e-7
+      }
+    },
+    "gpt-6-rosalind": {
+      "short": {
+        "input": 0.000015,
+        "cachedInput": 0.0000015,
+        "cacheWrite": 0.00001875,
+        "output": 0.000075
+      },
+      "long": {
+        "input": 0.00003,
+        "cachedInput": 0.000003,
+        "cacheWrite": 0.0000375,
+        "output": 0.0001125
       }
     },
     "gpt-6-sol": {
