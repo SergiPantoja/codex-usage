@@ -1,8 +1,8 @@
 {
-  "sourceUrl": "https://raw.githubusercontent.com/BerriAI/litellm/a392a39627f51bf0369944556c22268ee8cffe83/model_prices_and_context_window.json",
-  "litellmCommit": "a392a39627f51bf0369944556c22268ee8cffe83",
-  "capturedAt": "2026-10-31T06:25:35.805Z",
-  "sourceEntries": 4547,
+  "sourceUrl": "https://raw.githubusercontent.com/BerriAI/litellm/a1c5829f6b7664135974e902bdee2419c53ef825/model_prices_and_context_window.json",
+  "litellmCommit": "a1c5829f6b7664135974e902bdee2419c53ef825",
+  "capturedAt": "2026-11-01T06:26:51.997Z",
+  "sourceEntries": 4553,
   "models": {
     "chat-latest": {
       "short": {
@@ -765,6 +765,15 @@
         "cacheWrite": 0.000025,
         "output": 0.000075
       }
+    },
+    "gpt-6-astra-law": {
+      "short": {
+        "input": 0.00001,
+        "cachedInput": 0.000001,
+        "cacheWrite": null,
+        "output": 0.00005
+      },
+      "long": null
     },
     "gpt-6-luna": {
       "short": {
