@@ -1,8 +1,8 @@
 {
-  "sourceUrl": "https://raw.githubusercontent.com/BerriAI/litellm/a1c5829f6b7664135974e902bdee2419c53ef825/model_prices_and_context_window.json",
-  "litellmCommit": "a1c5829f6b7664135974e902bdee2419c53ef825",
-  "capturedAt": "2026-11-01T06:26:51.997Z",
-  "sourceEntries": 4553,
+  "sourceUrl": "https://raw.githubusercontent.com/BerriAI/litellm/f82e4c80acb7205e9fdfbcf2b6b2b4cb669cabb8/model_prices_and_context_window.json",
+  "litellmCommit": "f82e4c80acb7205e9fdfbcf2b6b2b4cb669cabb8",
+  "capturedAt": "2026-11-06T06:29:04.168Z",
+  "sourceEntries": 4759,
   "models": {
     "chat-latest": {
       "short": {
@@ -772,6 +772,15 @@
         "cachedInput": 0.000001,
         "cacheWrite": null,
         "output": 0.00005
+      },
+      "long": null
+    },
+    "gpt-6-cyber": {
+      "short": {
+        "input": 0.00002,
+        "cachedInput": 0.000002,
+        "cacheWrite": 0.000025,
+        "output": 0.0001
       },
       "long": null
     },
