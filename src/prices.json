@@ -1,8 +1,8 @@
 {
-  "sourceUrl": "https://raw.githubusercontent.com/BerriAI/litellm/f82e4c80acb7205e9fdfbcf2b6b2b4cb669cabb8/model_prices_and_context_window.json",
-  "litellmCommit": "f82e4c80acb7205e9fdfbcf2b6b2b4cb669cabb8",
-  "capturedAt": "2026-11-06T06:29:04.168Z",
-  "sourceEntries": 4759,
+  "sourceUrl": "https://raw.githubusercontent.com/BerriAI/litellm/fe6cf07cc8182beda67c89acdaf86c65a5da96f0/model_prices_and_context_window.json",
+  "litellmCommit": "fe6cf07cc8182beda67c89acdaf86c65a5da96f0",
+  "capturedAt": "2026-11-10T06:28:09.417Z",
+  "sourceEntries": 4892,
   "models": {
     "chat-latest": {
       "short": {
@@ -782,7 +782,12 @@
         "cacheWrite": 0.000025,
         "output": 0.0001
       },
-      "long": null
+      "long": {
+        "input": 0.00004,
+        "cachedInput": 0.000004,
+        "cacheWrite": null,
+        "output": 0.00015
+      }
     },
     "gpt-6-luna": {
       "short": {
