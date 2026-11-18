@@ -1,8 +1,8 @@
 {
-  "sourceUrl": "https://raw.githubusercontent.com/BerriAI/litellm/fe6cf07cc8182beda67c89acdaf86c65a5da96f0/model_prices_and_context_window.json",
-  "litellmCommit": "fe6cf07cc8182beda67c89acdaf86c65a5da96f0",
-  "capturedAt": "2026-11-10T06:28:09.417Z",
-  "sourceEntries": 4892,
+  "sourceUrl": "https://raw.githubusercontent.com/BerriAI/litellm/736b05716593347fa51b92afa9526a2397af312c/model_prices_and_context_window.json",
+  "litellmCommit": "736b05716593347fa51b92afa9526a2397af312c",
+  "capturedAt": "2026-11-18T06:29:07.155Z",
+  "sourceEntries": 6221,
   "models": {
     "chat-latest": {
       "short": {
@@ -773,7 +773,12 @@
         "cacheWrite": null,
         "output": 0.00005
       },
-      "long": null
+      "long": {
+        "input": 0.00002,
+        "cachedInput": 0.000002,
+        "cacheWrite": null,
+        "output": 0.000075
+      }
     },
     "gpt-6-cyber": {
       "short": {
@@ -857,6 +862,48 @@
         "cachedInput": 1e-7,
         "cacheWrite": 0.0000025,
         "output": 0.0000075
+      }
+    },
+    "gpt-6.2-astra": {
+      "short": {
+        "input": 0.000008,
+        "cachedInput": 4e-7,
+        "cacheWrite": 0.00001,
+        "output": 0.00004
+      },
+      "long": {
+        "input": 0.000016,
+        "cachedInput": 8e-7,
+        "cacheWrite": 0.00002,
+        "output": 0.00006
+      }
+    },
+    "gpt-6.2-astra-law": {
+      "short": {
+        "input": 0.000008,
+        "cachedInput": 4e-7,
+        "cacheWrite": 0.00001,
+        "output": 0.00004
+      },
+      "long": {
+        "input": 0.000016,
+        "cachedInput": 8e-7,
+        "cacheWrite": 0.00002,
+        "output": 0.00006
+      }
+    },
+    "gpt-6.2-sol": {
+      "short": {
+        "input": 0.000002,
+        "cachedInput": 1e-7,
+        "cacheWrite": 0.0000025,
+        "output": 0.00001
+      },
+      "long": {
+        "input": 0.000004,
+        "cachedInput": 2e-7,
+        "cacheWrite": 0.000005,
+        "output": 0.000015
       }
     },
     "gpt-audio": {
